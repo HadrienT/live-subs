@@ -300,7 +300,17 @@ browser.runtime.onMessage.addListener((raw: unknown) => {
 
 // ------------------------------------------------------------------ boot
 
+/**
+ * Reloading or updating the extension without reloading YouTube stops the old
+ * content script but leaves its elements in the page: remove them, or every
+ * reload stacks one more transcript panel (and overlay).
+ */
+function removeLeftovers(): void {
+  for (const el of document.querySelectorAll("#live-subs-overlay, #live-subs-panel")) el.remove();
+}
+
 async function main(): Promise<void> {
+  removeLeftovers();
   settings = await loadSettings();
   hudOn = settings.hud;
   overlay = new Overlay(
