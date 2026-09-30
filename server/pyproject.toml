@@ -11,6 +11,7 @@ dependencies = [
     "pydantic-settings>=2.6",
     "numpy>=2.1",
     "onnxruntime>=1.30.0",
+    "httpx>=0.28.1",
 ]
 
 [project.optional-dependencies]
@@ -28,6 +29,7 @@ livesubs = "livesubs.__main__:main"
 bench = [
     "jiwer>=4.0.0",
     "pyarrow>=25.0.1",
+    "pykakasi>=2.3.0",
     "soundfile>=0.14.0",
 ]
 dev = [

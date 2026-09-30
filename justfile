@@ -40,7 +40,7 @@ replay file *args:
 
 # ASR benchmark (WP04)
 bench-asr *args:
-    cd {{server}} && uv run --extra gpu python ../benchmarks/asr/run.py {{args}}
+    cd {{server}} && uv run --extra gpu --group bench python ../benchmarks/asr/run.py {{args}}
 
 # Translation benchmark (WP06)
 bench-mt *args:
@@ -65,3 +65,7 @@ protocol-schema:
 # Build the public CC0 benchmark set (Common Voice 8.0 ja) in benchmarks/data/public/
 bench-prepare *args:
     cd {{server}} && uv run --group bench python ../benchmarks/prepare_public.py {{args}}
+
+# Blind A/B review of two translation models (WP06 §4)
+bench-mt-blind *args:
+    cd {{server}} && uv run python ../benchmarks/mt/blind.py {{args}}

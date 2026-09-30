@@ -1,0 +1,2055 @@
+{
+ "results": [
+  {
+   "model": "kotoba-whisper-v2.0",
+   "compute_type": "float16",
+   "beam_size": 1,
+   "device": "cuda:0",
+   "n": 200,
+   "load_s": 1.9,
+   "cer_public": 8.65,
+   "cer_public_kana": 3.55,
+   "n_public": 200,
+   "speech_rejected_public": 0.0,
+   "speech_rejected_public_examples": [],
+   "examples": [
+    {
+     "ref": "忘れちゃったの？.",
+     "hyp": "忘れちゃったの?"
+    },
+    {
+     "ref": "きょうこの店は肉が安いです。.",
+     "hyp": "今日この店は肉が安いです"
+    },
+    {
+     "ref": "ささいな話も笑いに変えてしまう天才.",
+     "hyp": "ささいな話も笑いに変えてしまう天才"
+    },
+    {
+     "ref": "照明用の巨大ライトが強くまたたく.",
+     "hyp": "照明用の巨大ライトが強く瞬く"
+    },
+    {
+     "ref": "卵に塩をつけて食べます。.",
+     "hyp": "卵に塩をつけて食べます"
+    }
+   ],
+   "cer_streams": null,
+   "hallucinations": [
+    {
+     "clip": "music0",
+     "text": "ごめん",
+     "lp": -0.42,
+     "nsp": 0.1
+    },
+    {
+     "clip": "music1",
+     "text": "ごめん",
+     "lp": -0.45,
+     "nsp": 0.08
+    },
+    {
+     "clip": "music2",
+     "text": "ごめん",
+     "lp": -0.45,
+     "nsp": 0.08
+    },
+    {
+     "clip": "music3",
+     "text": "ごめん",
+     "lp": -0.46,
+     "nsp": 0.07
+    },
+    {
+     "clip": "music4",
+     "text": "ごめん",
+     "lp": -0.46,
+     "nsp": 0.07
+    },
+    {
+     "clip": "music5",
+     "text": "ごめん",
+     "lp": -0.43,
+     "nsp": 0.08
+    },
+    {
+     "clip": "music6",
+     "text": "ごめん",
+     "lp": -0.45,
+     "nsp": 0.08
+    },
+    {
+     "clip": "music7",
+     "text": "ごめん",
+     "lp": -0.46,
+     "nsp": 0.08
+    },
+    {
+     "clip": "sfx0",
+     "text": "ごめん",
+     "lp": -0.6,
+     "nsp": 0.11
+    },
+    {
+     "clip": "sfx1",
+     "text": "ごめん",
+     "lp": -0.86,
+     "nsp": 0.13
+    },
+    {
+     "clip": "sfx2",
+     "text": "ごめん",
+     "lp": -0.78,
+     "nsp": 0.13
+    },
+    {
+     "clip": "sfx3",
+     "text": "ごめん",
+     "lp": -0.58,
+     "nsp": 0.14
+    },
+    {
+     "clip": "noise0",
+     "text": "ごちそう",
+     "lp": -0.54,
+     "nsp": 0.11
+    },
+    {
+     "clip": "noise1",
+     "text": "ごちそう",
+     "lp": -0.54,
+     "nsp": 0.12
+    },
+    {
+     "clip": "noise2",
+     "text": "ごちそう",
+     "lp": -0.56,
+     "nsp": 0.11
+    },
+    {
+     "clip": "noise3",
+     "text": "ごちそう",
+     "lp": -0.58,
+     "nsp": 0.11
+    },
+    {
+     "clip": "silence0",
+     "text": "ごめん",
+     "lp": -0.42,
+     "nsp": 0.09
+    },
+    {
+     "clip": "silence1",
+     "text": "ごめん",
+     "lp": -0.37,
+     "nsp": 0.09
+    }
+   ],
+   "halluc_rate": 1.0,
+   "halluc_rate_filtered": 0.0,
+   "lat2_p50": 100.2,
+   "lat2_p95": 105.8,
+   "lat5_p50": 109.5,
+   "lat5_p95": 117.0,
+   "lat10_p50": 120.3,
+   "lat10_p95": 134.3,
+   "rewrite_chars_per_step": 0.75,
+   "vram_peak_mib": 2046
+  },
+  {
+   "model": "kotoba-whisper-v2.0",
+   "compute_type": "float16",
+   "beam_size": 5,
+   "device": "cuda:0",
+   "n": 200,
+   "load_s": 2.0,
+   "cer_public": 8.57,
+   "cer_public_kana": 3.47,
+   "n_public": 200,
+   "speech_rejected_public": 0.0,
+   "speech_rejected_public_examples": [],
+   "examples": [
+    {
+     "ref": "忘れちゃったの？.",
+     "hyp": "忘れちゃったの?"
+    },
+    {
+     "ref": "きょうこの店は肉が安いです。.",
+     "hyp": "今日この店は肉が安いです"
+    },
+    {
+     "ref": "ささいな話も笑いに変えてしまう天才.",
+     "hyp": "ささいな話も笑いに変えてしまう天才"
+    },
+    {
+     "ref": "照明用の巨大ライトが強くまたたく.",
+     "hyp": "照明用の巨大ライトが強く瞬く"
+    },
+    {
+     "ref": "卵に塩をつけて食べます。.",
+     "hyp": "卵に塩をつけて食べます"
+    }
+   ],
+   "cer_streams": null,
+   "hallucinations": [
+    {
+     "clip": "music0",
+     "text": "ごめん",
+     "lp": -0.42,
+     "nsp": 0.1
+    },
+    {
+     "clip": "music1",
+     "text": "ごめん",
+     "lp": -0.45,
+     "nsp": 0.08
+    },
+    {
+     "clip": "music2",
+     "text": "ごめん",
+     "lp": -0.45,
+     "nsp": 0.08
+    },
+    {
+     "clip": "music3",
+     "text": "ごめん",
+     "lp": -0.45,
+     "nsp": 0.07
+    },
+    {
+     "clip": "music4",
+     "text": "ごめん",
+     "lp": -0.46,
+     "nsp": 0.07
+    },
+    {
+     "clip": "music5",
+     "text": "ごめん",
+     "lp": -0.43,
+     "nsp": 0.08
+    },
+    {
+     "clip": "music6",
+     "text": "ごめん",
+     "lp": -0.45,
+     "nsp": 0.08
+    },
+    {
+     "clip": "music7",
+     "text": "ごめん",
+     "lp": -0.46,
+     "nsp": 0.08
+    },
+    {
+     "clip": "sfx0",
+     "text": "ごめん",
+     "lp": -0.6,
+     "nsp": 0.11
+    },
+    {
+     "clip": "sfx1",
+     "text": "ご覧ください",
+     "lp": -0.8,
+     "nsp": 0.13
+    },
+    {
+     "clip": "sfx2",
+     "text": "ごめん",
+     "lp": -0.78,
+     "nsp": 0.13
+    },
+    {
+     "clip": "sfx3",
+     "text": "ごめん",
+     "lp": -0.58,
+     "nsp": 0.14
+    },
+    {
+     "clip": "noise0",
+     "text": "ごめん",
+     "lp": -0.49,
+     "nsp": 0.11
+    },
+    {
+     "clip": "noise1",
+     "text": "ごちそう",
+     "lp": -0.54,
+     "nsp": 0.12
+    },
+    {
+     "clip": "noise2",
+     "text": "ごちそう",
+     "lp": -0.56,
+     "nsp": 0.11
+    },
+    {
+     "clip": "noise3",
+     "text": "ごちそう",
+     "lp": -0.58,
+     "nsp": 0.11
+    },
+    {
+     "clip": "silence0",
+     "text": "ごめん",
+     "lp": -0.42,
+     "nsp": 0.09
+    },
+    {
+     "clip": "silence1",
+     "text": "ごめん",
+     "lp": -0.37,
+     "nsp": 0.09
+    }
+   ],
+   "halluc_rate": 1.0,
+   "halluc_rate_filtered": 0.0,
+   "lat2_p50": 101.4,
+   "lat2_p95": 108.7,
+   "lat5_p50": 114.0,
+   "lat5_p95": 124.0,
+   "lat10_p50": 126.7,
+   "lat10_p95": 145.6,
+   "rewrite_chars_per_step": 0.6,
+   "vram_peak_mib": 2046
+  },
+  {
+   "model": "kotoba-whisper-v2.0",
+   "compute_type": "int8_float16",
+   "beam_size": 1,
+   "device": "cuda:0",
+   "n": 200,
+   "load_s": 3.4,
+   "cer_public": 8.72,
+   "cer_public_kana": 3.59,
+   "n_public": 200,
+   "speech_rejected_public": 0.0,
+   "speech_rejected_public_examples": [],
+   "examples": [
+    {
+     "ref": "忘れちゃったの？.",
+     "hyp": "忘れちゃったの?"
+    },
+    {
+     "ref": "きょうこの店は肉が安いです。.",
+     "hyp": "今日この店は肉が安いです"
+    },
+    {
+     "ref": "ささいな話も笑いに変えてしまう天才.",
+     "hyp": "ささいな話も笑いに変えてしまう天才"
+    },
+    {
+     "ref": "照明用の巨大ライトが強くまたたく.",
+     "hyp": "照明用の巨大ライトが強く瞬く"
+    },
+    {
+     "ref": "卵に塩をつけて食べます。.",
+     "hyp": "卵に塩をつけて食べます"
+    }
+   ],
+   "cer_streams": null,
+   "hallucinations": [
+    {
+     "clip": "music0",
+     "text": "ごちそう",
+     "lp": -0.48,
+     "nsp": 0.08
+    },
+    {
+     "clip": "music1",
+     "text": "ごちそう",
+     "lp": -0.49,
+     "nsp": 0.07
+    },
+    {
+     "clip": "music2",
+     "text": "ごちそう",
+     "lp": -0.52,
+     "nsp": 0.06
+    },
+    {
+     "clip": "music3",
+     "text": "ごちそう",
+     "lp": -0.51,
+     "nsp": 0.06
+    },
+    {
+     "clip": "music4",
+     "text": "ごちそう",
+     "lp": -0.52,
+     "nsp": 0.06
+    },
+    {
+     "clip": "music5",
+     "text": "ごめん",
+     "lp": -0.49,
+     "nsp": 0.07
+    },
+    {
+     "clip": "music6",
+     "text": "ごちそう",
+     "lp": -0.51,
+     "nsp": 0.06
+    },
+    {
+     "clip": "music7",
+     "text": "ごめん",
+     "lp": -0.45,
+     "nsp": 0.06
+    },
+    {
+     "clip": "sfx0",
+     "text": "ごちそう",
+     "lp": -0.65,
+     "nsp": 0.12
+    },
+    {
+     "clip": "sfx1",
+     "text": "ごちそう",
+     "lp": -0.78,
+     "nsp": 0.13
+    },
+    {
+     "clip": "sfx2",
+     "text": "ごめん",
+     "lp": -0.83,
+     "nsp": 0.14
+    },
+    {
+     "clip": "sfx3",
+     "text": "ごめん",
+     "lp": -0.57,
+     "nsp": 0.14
+    },
+    {
+     "clip": "noise0",
+     "text": "ごちそう",
+     "lp": -0.57,
+     "nsp": 0.11
+    },
+    {
+     "clip": "noise1",
+     "text": "ごちそう",
+     "lp": -0.54,
+     "nsp": 0.12
+    },
+    {
+     "clip": "noise2",
+     "text": "ごちそう",
+     "lp": -0.56,
+     "nsp": 0.11
+    },
+    {
+     "clip": "noise3",
+     "text": "ごちそう",
+     "lp": -0.52,
+     "nsp": 0.12
+    },
+    {
+     "clip": "silence0",
+     "text": "ごめん",
+     "lp": -0.49,
+     "nsp": 0.09
+    },
+    {
+     "clip": "silence1",
+     "text": "ごめん",
+     "lp": -0.42,
+     "nsp": 0.09
+    }
+   ],
+   "halluc_rate": 1.0,
+   "halluc_rate_filtered": 0.0,
+   "lat2_p50": 120.8,
+   "lat2_p95": 127.2,
+   "lat5_p50": 134.6,
+   "lat5_p95": 140.8,
+   "lat10_p50": 142.2,
+   "lat10_p95": 160.3,
+   "rewrite_chars_per_step": 0.59,
+   "vram_peak_mib": 1214
+  },
+  {
+   "model": "kotoba-whisper-v2.0",
+   "compute_type": "int8_float16",
+   "beam_size": 5,
+   "device": "cuda:0",
+   "n": 200,
+   "load_s": 3.4,
+   "cer_public": 8.65,
+   "cer_public_kana": 3.32,
+   "n_public": 200,
+   "speech_rejected_public": 0.0,
+   "speech_rejected_public_examples": [],
+   "examples": [
+    {
+     "ref": "忘れちゃったの？.",
+     "hyp": "忘れちゃったの?"
+    },
+    {
+     "ref": "きょうこの店は肉が安いです。.",
+     "hyp": "今日この店は肉が安いです"
+    },
+    {
+     "ref": "ささいな話も笑いに変えてしまう天才.",
+     "hyp": "ささいな話も笑いに変えてしまう天才"
+    },
+    {
+     "ref": "照明用の巨大ライトが強くまたたく.",
+     "hyp": "照明用の巨大ライトが強く瞬く"
+    },
+    {
+     "ref": "卵に塩をつけて食べます。.",
+     "hyp": "卵に塩をつけて食べます"
+    }
+   ],
+   "cer_streams": null,
+   "hallucinations": [
+    {
+     "clip": "music0",
+     "text": "ごちそう",
+     "lp": -0.48,
+     "nsp": 0.08
+    },
+    {
+     "clip": "music1",
+     "text": "ごめん",
+     "lp": -0.46,
+     "nsp": 0.07
+    },
+    {
+     "clip": "music2",
+     "text": "ごめん",
+     "lp": -0.51,
+     "nsp": 0.06
+    },
+    {
+     "clip": "music3",
+     "text": "ごめん",
+     "lp": -0.48,
+     "nsp": 0.06
+    },
+    {
+     "clip": "music4",
+     "text": "ごめん",
+     "lp": -0.51,
+     "nsp": 0.06
+    },
+    {
+     "clip": "music5",
+     "text": "ごめん",
+     "lp": -0.49,
+     "nsp": 0.07
+    },
+    {
+     "clip": "music6",
+     "text": "ごめん",
+     "lp": -0.5,
+     "nsp": 0.06
+    },
+    {
+     "clip": "music7",
+     "text": "ごめん",
+     "lp": -0.47,
+     "nsp": 0.06
+    },
+    {
+     "clip": "sfx0",
+     "text": "ごめん",
+     "lp": -0.61,
+     "nsp": 0.12
+    },
+    {
+     "clip": "sfx1",
+     "text": "ご覧ください",
+     "lp": -0.74,
+     "nsp": 0.13
+    },
+    {
+     "clip": "sfx2",
+     "text": "ごきょう",
+     "lp": -0.81,
+     "nsp": 0.14
+    },
+    {
+     "clip": "sfx3",
+     "text": "ごめん",
+     "lp": -0.57,
+     "nsp": 0.14
+    },
+    {
+     "clip": "noise0",
+     "text": "ごめん",
+     "lp": -0.52,
+     "nsp": 0.11
+    },
+    {
+     "clip": "noise1",
+     "text": "ごちそう",
+     "lp": -0.54,
+     "nsp": 0.12
+    },
+    {
+     "clip": "noise2",
+     "text": "ごちそう",
+     "lp": -0.54,
+     "nsp": 0.11
+    },
+    {
+     "clip": "noise3",
+     "text": "ごちそう",
+     "lp": -0.53,
+     "nsp": 0.12
+    },
+    {
+     "clip": "silence0",
+     "text": "ごめん",
+     "lp": -0.5,
+     "nsp": 0.09
+    },
+    {
+     "clip": "silence1",
+     "text": "ごめん",
+     "lp": -0.42,
+     "nsp": 0.09
+    }
+   ],
+   "halluc_rate": 1.0,
+   "halluc_rate_filtered": 0.0,
+   "lat2_p50": 128.6,
+   "lat2_p95": 132.7,
+   "lat5_p50": 141.5,
+   "lat5_p95": 151.9,
+   "lat10_p50": 161.2,
+   "lat10_p95": 186.5,
+   "rewrite_chars_per_step": 0.68,
+   "vram_peak_mib": 1214
+  },
+  {
+   "model": "large-v3",
+   "compute_type": "float16",
+   "beam_size": 1,
+   "device": "cuda:1",
+   "n": 200,
+   "load_s": 3.8,
+   "cer_public": 8.32,
+   "cer_public_kana": 3.12,
+   "n_public": 200,
+   "speech_rejected_public": 0.0,
+   "speech_rejected_public_examples": [],
+   "examples": [
+    {
+     "ref": "忘れちゃったの？.",
+     "hyp": "忘れちゃったの?"
+    },
+    {
+     "ref": "きょうこの店は肉が安いです。.",
+     "hyp": "今日この店は肉が安いです。"
+    },
+    {
+     "ref": "ささいな話も笑いに変えてしまう天才.",
+     "hyp": "些細な話も笑いに変えてしまう天才"
+    },
+    {
+     "ref": "照明用の巨大ライトが強くまたたく.",
+     "hyp": "照明用の巨大ライトが強く瞬く"
+    },
+    {
+     "ref": "卵に塩をつけて食べます。.",
+     "hyp": "卵に塩をつけて食べます。"
+    }
+   ],
+   "cer_streams": null,
+   "hallucinations": [
+    {
+     "clip": "music0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.2,
+     "nsp": 0.68
+    },
+    {
+     "clip": "music1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.22,
+     "nsp": 0.62
+    },
+    {
+     "clip": "music2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.21,
+     "nsp": 0.65
+    },
+    {
+     "clip": "music3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.2,
+     "nsp": 0.65
+    },
+    {
+     "clip": "music4",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.21,
+     "nsp": 0.59
+    },
+    {
+     "clip": "music5",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.23,
+     "nsp": 0.67
+    },
+    {
+     "clip": "music6",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.23,
+     "nsp": 0.62
+    },
+    {
+     "clip": "music7",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.22,
+     "nsp": 0.67
+    },
+    {
+     "clip": "sfx0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.27,
+     "nsp": 0.88
+    },
+    {
+     "clip": "sfx1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.22,
+     "nsp": 0.9
+    },
+    {
+     "clip": "sfx3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.25,
+     "nsp": 0.9
+    },
+    {
+     "clip": "noise0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.15,
+     "nsp": 0.78
+    },
+    {
+     "clip": "noise1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.28,
+     "nsp": 0.83
+    },
+    {
+     "clip": "noise2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.24,
+     "nsp": 0.83
+    },
+    {
+     "clip": "noise3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.24,
+     "nsp": 0.82
+    },
+    {
+     "clip": "silence0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.12,
+     "nsp": 0.82
+    },
+    {
+     "clip": "silence1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.11,
+     "nsp": 0.79
+    }
+   ],
+   "halluc_rate": 0.944,
+   "halluc_rate_filtered": 0.0,
+   "lat2_p50": 151.8,
+   "lat2_p95": 286.1,
+   "lat5_p50": 212.0,
+   "lat5_p95": 294.9,
+   "lat10_p50": 305.5,
+   "lat10_p95": 413.1,
+   "rewrite_chars_per_step": 1.05,
+   "vram_peak_mib": 3678
+  },
+  {
+   "model": "large-v3",
+   "compute_type": "float16",
+   "beam_size": 5,
+   "device": "cuda:1",
+   "n": 200,
+   "load_s": 3.8,
+   "cer_public": 8.29,
+   "cer_public_kana": 3.16,
+   "n_public": 200,
+   "speech_rejected_public": 0.0,
+   "speech_rejected_public_examples": [],
+   "examples": [
+    {
+     "ref": "忘れちゃったの？.",
+     "hyp": "忘れちゃったの?"
+    },
+    {
+     "ref": "きょうこの店は肉が安いです。.",
+     "hyp": "今日この店は肉が安いです。"
+    },
+    {
+     "ref": "ささいな話も笑いに変えてしまう天才.",
+     "hyp": "些細な話も笑いに変えてしまう天才。"
+    },
+    {
+     "ref": "照明用の巨大ライトが強くまたたく.",
+     "hyp": "照明用の巨大ライトが強く瞬く"
+    },
+    {
+     "ref": "卵に塩をつけて食べます。.",
+     "hyp": "卵に塩をつけて食べます。"
+    }
+   ],
+   "cer_streams": null,
+   "hallucinations": [
+    {
+     "clip": "music0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.2,
+     "nsp": 0.68
+    },
+    {
+     "clip": "music1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.22,
+     "nsp": 0.62
+    },
+    {
+     "clip": "music2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.21,
+     "nsp": 0.65
+    },
+    {
+     "clip": "music3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.2,
+     "nsp": 0.65
+    },
+    {
+     "clip": "music4",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.21,
+     "nsp": 0.59
+    },
+    {
+     "clip": "music5",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.23,
+     "nsp": 0.67
+    },
+    {
+     "clip": "music6",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.23,
+     "nsp": 0.62
+    },
+    {
+     "clip": "music7",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.22,
+     "nsp": 0.67
+    },
+    {
+     "clip": "sfx0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.27,
+     "nsp": 0.88
+    },
+    {
+     "clip": "sfx1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.22,
+     "nsp": 0.9
+    },
+    {
+     "clip": "sfx2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.62,
+     "nsp": 0.91
+    },
+    {
+     "clip": "sfx3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.25,
+     "nsp": 0.9
+    },
+    {
+     "clip": "noise0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.14,
+     "nsp": 0.78
+    },
+    {
+     "clip": "noise2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.24,
+     "nsp": 0.83
+    },
+    {
+     "clip": "noise3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.24,
+     "nsp": 0.82
+    },
+    {
+     "clip": "silence0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.12,
+     "nsp": 0.82
+    },
+    {
+     "clip": "silence1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.11,
+     "nsp": 0.79
+    }
+   ],
+   "halluc_rate": 0.944,
+   "halluc_rate_filtered": 0.0,
+   "lat2_p50": 163.3,
+   "lat2_p95": 223.5,
+   "lat5_p50": 244.5,
+   "lat5_p95": 358.2,
+   "lat10_p50": 354.5,
+   "lat10_p95": 507.9,
+   "rewrite_chars_per_step": 0.88,
+   "vram_peak_mib": 3710
+  },
+  {
+   "model": "large-v3",
+   "compute_type": "int8_float16",
+   "beam_size": 1,
+   "device": "cuda:0",
+   "n": 200,
+   "load_s": 6.1,
+   "cer_public": 8.57,
+   "cer_public_kana": 3.22,
+   "n_public": 200,
+   "speech_rejected_public": 0.0,
+   "speech_rejected_public_examples": [],
+   "examples": [
+    {
+     "ref": "忘れちゃったの？.",
+     "hyp": "忘れちゃったの?"
+    },
+    {
+     "ref": "きょうこの店は肉が安いです。.",
+     "hyp": "今日この店は肉が安いです。"
+    },
+    {
+     "ref": "ささいな話も笑いに変えてしまう天才.",
+     "hyp": "些細な話も笑いに変えてしまう天才"
+    },
+    {
+     "ref": "照明用の巨大ライトが強くまたたく.",
+     "hyp": "照明用の巨大ライトが強く瞬く"
+    },
+    {
+     "ref": "卵に塩をつけて食べます。.",
+     "hyp": "卵に塩をつけて食べます。"
+    }
+   ],
+   "cer_streams": null,
+   "hallucinations": [
+    {
+     "clip": "music0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.17,
+     "nsp": 0.56
+    },
+    {
+     "clip": "music1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.18,
+     "nsp": 0.5
+    },
+    {
+     "clip": "music2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.2,
+     "nsp": 0.59
+    },
+    {
+     "clip": "music3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.18,
+     "nsp": 0.54
+    },
+    {
+     "clip": "music4",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.21,
+     "nsp": 0.5
+    },
+    {
+     "clip": "music5",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.21,
+     "nsp": 0.55
+    },
+    {
+     "clip": "music6",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.19,
+     "nsp": 0.47
+    },
+    {
+     "clip": "music7",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.2,
+     "nsp": 0.57
+    },
+    {
+     "clip": "sfx0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.25,
+     "nsp": 0.86
+    },
+    {
+     "clip": "sfx1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.2,
+     "nsp": 0.88
+    },
+    {
+     "clip": "sfx2",
+     "text": "おわり",
+     "lp": -0.93,
+     "nsp": 0.9
+    },
+    {
+     "clip": "sfx3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.22,
+     "nsp": 0.87
+    },
+    {
+     "clip": "noise0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.15,
+     "nsp": 0.79
+    },
+    {
+     "clip": "noise1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.22,
+     "nsp": 0.82
+    },
+    {
+     "clip": "noise2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.18,
+     "nsp": 0.8
+    },
+    {
+     "clip": "noise3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.19,
+     "nsp": 0.79
+    },
+    {
+     "clip": "silence0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.14,
+     "nsp": 0.84
+    },
+    {
+     "clip": "silence1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.12,
+     "nsp": 0.79
+    }
+   ],
+   "halluc_rate": 1.0,
+   "halluc_rate_filtered": 0.0,
+   "lat2_p50": 185.6,
+   "lat2_p95": 359.9,
+   "lat5_p50": 256.4,
+   "lat5_p95": 350.8,
+   "lat10_p50": 361.4,
+   "lat10_p95": 528.3,
+   "rewrite_chars_per_step": 1.57,
+   "vram_peak_mib": 2110
+  },
+  {
+   "model": "large-v3",
+   "compute_type": "int8_float16",
+   "beam_size": 5,
+   "device": "cuda:0",
+   "n": 200,
+   "load_s": 6.1,
+   "cer_public": 8.19,
+   "cer_public_kana": 3.1,
+   "n_public": 200,
+   "speech_rejected_public": 0.0,
+   "speech_rejected_public_examples": [],
+   "examples": [
+    {
+     "ref": "忘れちゃったの？.",
+     "hyp": "忘れちゃったの?"
+    },
+    {
+     "ref": "きょうこの店は肉が安いです。.",
+     "hyp": "今日この店は肉が安いです。"
+    },
+    {
+     "ref": "ささいな話も笑いに変えてしまう天才.",
+     "hyp": "些細な話も笑いに変えてしまう天才。"
+    },
+    {
+     "ref": "照明用の巨大ライトが強くまたたく.",
+     "hyp": "照明用の巨大ライトが強く瞬く"
+    },
+    {
+     "ref": "卵に塩をつけて食べます。.",
+     "hyp": "卵に塩をつけて食べます。"
+    }
+   ],
+   "cer_streams": null,
+   "hallucinations": [
+    {
+     "clip": "music0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.19,
+     "nsp": 0.56
+    },
+    {
+     "clip": "music1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.18,
+     "nsp": 0.5
+    },
+    {
+     "clip": "music2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.2,
+     "nsp": 0.59
+    },
+    {
+     "clip": "music3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.18,
+     "nsp": 0.54
+    },
+    {
+     "clip": "music4",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.21,
+     "nsp": 0.5
+    },
+    {
+     "clip": "music5",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.21,
+     "nsp": 0.55
+    },
+    {
+     "clip": "music6",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.2,
+     "nsp": 0.47
+    },
+    {
+     "clip": "music7",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.21,
+     "nsp": 0.57
+    },
+    {
+     "clip": "sfx0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.26,
+     "nsp": 0.86
+    },
+    {
+     "clip": "sfx1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.21,
+     "nsp": 0.88
+    },
+    {
+     "clip": "sfx2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.57,
+     "nsp": 0.9
+    },
+    {
+     "clip": "sfx3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.23,
+     "nsp": 0.87
+    },
+    {
+     "clip": "noise0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.15,
+     "nsp": 0.79
+    },
+    {
+     "clip": "noise2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.19,
+     "nsp": 0.8
+    },
+    {
+     "clip": "noise3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.18,
+     "nsp": 0.79
+    },
+    {
+     "clip": "silence0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.13,
+     "nsp": 0.84
+    }
+   ],
+   "halluc_rate": 0.889,
+   "halluc_rate_filtered": 0.0,
+   "lat2_p50": 193.7,
+   "lat2_p95": 266.9,
+   "lat5_p50": 275.6,
+   "lat5_p95": 419.8,
+   "lat10_p50": 409.7,
+   "lat10_p95": 580.7,
+   "rewrite_chars_per_step": 0.84,
+   "vram_peak_mib": 2110
+  },
+  {
+   "model": "large-v3-turbo",
+   "compute_type": "float16",
+   "beam_size": 1,
+   "device": "cuda:0",
+   "n": 200,
+   "load_s": 23.0,
+   "cer_public": 14.69,
+   "cer_public_kana": 7.87,
+   "n_public": 200,
+   "speech_rejected_public": 0.01,
+   "speech_rejected_public_examples": [
+    {
+     "ref": "はい、どうぞ。.",
+     "hyp": "はい",
+     "why": "sparse_low_confidence",
+     "lp": -0.56
+    },
+    {
+     "ref": "彼女から学ぶべきことは多い.",
+     "hyp": "こんにちは、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、",
+     "why": "repetition",
+     "lp": -0.09
+    }
+   ],
+   "examples": [
+    {
+     "ref": "忘れちゃったの？.",
+     "hyp": "忘れちゃったの?"
+    },
+    {
+     "ref": "きょうこの店は肉が安いです。.",
+     "hyp": "今日この店は肉が安いです。"
+    },
+    {
+     "ref": "ささいな話も笑いに変えてしまう天才.",
+     "hyp": "些細な話も笑いに変えてしまう天才"
+    },
+    {
+     "ref": "照明用の巨大ライトが強くまたたく.",
+     "hyp": "照明用の巨大ライトが強く瞬く"
+    },
+    {
+     "ref": "卵に塩をつけて食べます。.",
+     "hyp": "卵に塩をつけて食べます。"
+    }
+   ],
+   "cer_streams": null,
+   "hallucinations": [
+    {
+     "clip": "music0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.15,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.16,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.16,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.14,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music4",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.15,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music5",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.16,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music6",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.16,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music7",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.16,
+     "nsp": 0.0
+    },
+    {
+     "clip": "sfx0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.17,
+     "nsp": 0.0
+    },
+    {
+     "clip": "sfx1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.14,
+     "nsp": 0.0
+    },
+    {
+     "clip": "sfx2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.18,
+     "nsp": 0.0
+    },
+    {
+     "clip": "sfx3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.17,
+     "nsp": 0.0
+    },
+    {
+     "clip": "noise0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.32,
+     "nsp": 0.0
+    },
+    {
+     "clip": "noise1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.54,
+     "nsp": 0.0
+    },
+    {
+     "clip": "noise2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.53,
+     "nsp": 0.0
+    },
+    {
+     "clip": "noise3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.57,
+     "nsp": 0.0
+    },
+    {
+     "clip": "silence0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.11,
+     "nsp": 0.0
+    },
+    {
+     "clip": "silence1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.1,
+     "nsp": 0.0
+    }
+   ],
+   "halluc_rate": 1.0,
+   "halluc_rate_filtered": 0.0,
+   "lat2_p50": 105.9,
+   "lat2_p95": 120.0,
+   "lat5_p50": 124.9,
+   "lat5_p95": 139.5,
+   "lat10_p50": 139.5,
+   "lat10_p95": 155.3,
+   "rewrite_chars_per_step": 4.15,
+   "vram_peak_mib": 2142
+  },
+  {
+   "model": "large-v3-turbo",
+   "compute_type": "float16",
+   "beam_size": 5,
+   "device": "cuda:0",
+   "n": 200,
+   "load_s": 2.5,
+   "cer_public": 8.59,
+   "cer_public_kana": 3.3,
+   "n_public": 200,
+   "speech_rejected_public": 0.005,
+   "speech_rejected_public_examples": [
+    {
+     "ref": "はい、どうぞ。.",
+     "hyp": "はい、どうぞ",
+     "why": "sparse_low_confidence",
+     "lp": -0.49
+    }
+   ],
+   "examples": [
+    {
+     "ref": "忘れちゃったの？.",
+     "hyp": "忘れちゃったの?"
+    },
+    {
+     "ref": "きょうこの店は肉が安いです。.",
+     "hyp": "今日この店は肉が安いです。"
+    },
+    {
+     "ref": "ささいな話も笑いに変えてしまう天才.",
+     "hyp": "些細な話も笑いに変えてしまう天才"
+    },
+    {
+     "ref": "照明用の巨大ライトが強くまたたく.",
+     "hyp": "照明用の巨大ライトが強く瞬く"
+    },
+    {
+     "ref": "卵に塩をつけて食べます。.",
+     "hyp": "卵に塩をつけて食べます。"
+    }
+   ],
+   "cer_streams": null,
+   "hallucinations": [
+    {
+     "clip": "music0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.15,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music1",
+     "text": "チャンネル登録よろしくお願いします",
+     "lp": -0.8,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music2",
+     "text": "チャンネル登録よろしくお願いします",
+     "lp": -0.86,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.14,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music4",
+     "text": "チャンネル登録よろしくお願いします",
+     "lp": -0.86,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music5",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.16,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music6",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.16,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music7",
+     "text": "チャンネル登録よろしくお願いします",
+     "lp": -0.87,
+     "nsp": 0.0
+    },
+    {
+     "clip": "sfx0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.17,
+     "nsp": 0.0
+    },
+    {
+     "clip": "sfx1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.14,
+     "nsp": 0.0
+    },
+    {
+     "clip": "sfx2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.18,
+     "nsp": 0.0
+    },
+    {
+     "clip": "sfx3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.16,
+     "nsp": 0.0
+    },
+    {
+     "clip": "noise0",
+     "text": "おやすみ",
+     "lp": -1.32,
+     "nsp": 0.0
+    },
+    {
+     "clip": "noise1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.54,
+     "nsp": 0.0
+    },
+    {
+     "clip": "noise2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.53,
+     "nsp": 0.0
+    },
+    {
+     "clip": "noise3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.57,
+     "nsp": 0.0
+    },
+    {
+     "clip": "silence0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.11,
+     "nsp": 0.0
+    },
+    {
+     "clip": "silence1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.1,
+     "nsp": 0.0
+    }
+   ],
+   "halluc_rate": 1.0,
+   "halluc_rate_filtered": 0.0,
+   "lat2_p50": 120.1,
+   "lat2_p95": 130.0,
+   "lat5_p50": 139.7,
+   "lat5_p95": 158.4,
+   "lat10_p50": 159.7,
+   "lat10_p95": 191.1,
+   "rewrite_chars_per_step": 1.15,
+   "vram_peak_mib": 2142
+  },
+  {
+   "model": "large-v3-turbo",
+   "compute_type": "int8_float16",
+   "beam_size": 1,
+   "device": "cuda:0",
+   "n": 200,
+   "load_s": 4.2,
+   "cer_public": 14.43,
+   "cer_public_kana": 7.76,
+   "n_public": 200,
+   "speech_rejected_public": 0.015,
+   "speech_rejected_public_examples": [
+    {
+     "ref": "はい、どうぞ。.",
+     "hyp": "はい",
+     "why": "sparse_low_confidence",
+     "lp": -0.45
+    },
+    {
+     "ref": "彼女から学ぶべきことは多い.",
+     "hyp": "こんにちは、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、みんな、",
+     "why": "repetition",
+     "lp": -0.1
+    },
+    {
+     "ref": "一、二、三、四…。.",
+     "hyp": "一二三年",
+     "why": "sparse_low_confidence",
+     "lp": -0.57
+    }
+   ],
+   "examples": [
+    {
+     "ref": "忘れちゃったの？.",
+     "hyp": "忘れちゃったの?"
+    },
+    {
+     "ref": "きょうこの店は肉が安いです。.",
+     "hyp": "今日この店は肉が安いです。"
+    },
+    {
+     "ref": "ささいな話も笑いに変えてしまう天才.",
+     "hyp": "些細な話も笑いに変えてしまう天才"
+    },
+    {
+     "ref": "照明用の巨大ライトが強くまたたく.",
+     "hyp": "照明用の巨大ライトが強く瞬く"
+    },
+    {
+     "ref": "卵に塩をつけて食べます。.",
+     "hyp": "卵に塩をつけて食べます。"
+    }
+   ],
+   "cer_streams": null,
+   "hallucinations": [
+    {
+     "clip": "music0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.16,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.15,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.16,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.16,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music4",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.13,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music5",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.16,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music6",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.15,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music7",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.13,
+     "nsp": 0.0
+    },
+    {
+     "clip": "sfx0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.18,
+     "nsp": 0.0
+    },
+    {
+     "clip": "sfx1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.15,
+     "nsp": 0.0
+    },
+    {
+     "clip": "sfx2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.21,
+     "nsp": 0.0
+    },
+    {
+     "clip": "sfx3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.17,
+     "nsp": 0.0
+    },
+    {
+     "clip": "noise0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.3,
+     "nsp": 0.0
+    },
+    {
+     "clip": "noise1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.45,
+     "nsp": 0.0
+    },
+    {
+     "clip": "noise2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.55,
+     "nsp": 0.0
+    },
+    {
+     "clip": "noise3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.56,
+     "nsp": 0.0
+    },
+    {
+     "clip": "silence0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.14,
+     "nsp": 0.0
+    },
+    {
+     "clip": "silence1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.11,
+     "nsp": 0.0
+    }
+   ],
+   "halluc_rate": 1.0,
+   "halluc_rate_filtered": 0.0,
+   "lat2_p50": 135.8,
+   "lat2_p95": 143.3,
+   "lat5_p50": 151.7,
+   "lat5_p95": 173.3,
+   "lat10_p50": 172.2,
+   "lat10_p95": 195.8,
+   "rewrite_chars_per_step": 1.62,
+   "vram_peak_mib": 1278
+  },
+  {
+   "model": "large-v3-turbo",
+   "compute_type": "int8_float16",
+   "beam_size": 5,
+   "device": "cuda:0",
+   "n": 200,
+   "load_s": 4.3,
+   "cer_public": 8.9,
+   "cer_public_kana": 3.59,
+   "n_public": 200,
+   "speech_rejected_public": 0.005,
+   "speech_rejected_public_examples": [
+    {
+     "ref": "はい、どうぞ。.",
+     "hyp": "はい、どうぞ",
+     "why": "sparse_low_confidence",
+     "lp": -0.58
+    }
+   ],
+   "examples": [
+    {
+     "ref": "忘れちゃったの？.",
+     "hyp": "忘れちゃったの?"
+    },
+    {
+     "ref": "きょうこの店は肉が安いです。.",
+     "hyp": "今日この店は肉が安いです。"
+    },
+    {
+     "ref": "ささいな話も笑いに変えてしまう天才.",
+     "hyp": "些細な話も笑いに変えてしまう天才"
+    },
+    {
+     "ref": "照明用の巨大ライトが強くまたたく.",
+     "hyp": "照明用の巨大ライトが強く瞬く"
+    },
+    {
+     "ref": "卵に塩をつけて食べます。.",
+     "hyp": "卵に塩をつけて食べます。"
+    }
+   ],
+   "cer_streams": null,
+   "hallucinations": [
+    {
+     "clip": "music0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.16,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music1",
+     "text": "チャンネル登録よろしくお願いします",
+     "lp": -0.8,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.16,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music3",
+     "text": "チャンネル登録よろしくお願いします",
+     "lp": -0.8,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music4",
+     "text": "チャンネル登録よろしくお願いします",
+     "lp": -0.81,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music5",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.16,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music6",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.16,
+     "nsp": 0.0
+    },
+    {
+     "clip": "music7",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.14,
+     "nsp": 0.0
+    },
+    {
+     "clip": "sfx0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.19,
+     "nsp": 0.0
+    },
+    {
+     "clip": "sfx1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.15,
+     "nsp": 0.0
+    },
+    {
+     "clip": "sfx2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.2,
+     "nsp": 0.0
+    },
+    {
+     "clip": "sfx3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.18,
+     "nsp": 0.0
+    },
+    {
+     "clip": "noise0",
+     "text": "おやすみ",
+     "lp": -1.34,
+     "nsp": 0.0
+    },
+    {
+     "clip": "noise1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.45,
+     "nsp": 0.0
+    },
+    {
+     "clip": "noise2",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.56,
+     "nsp": 0.0
+    },
+    {
+     "clip": "noise3",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.55,
+     "nsp": 0.0
+    },
+    {
+     "clip": "silence0",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.14,
+     "nsp": 0.0
+    },
+    {
+     "clip": "silence1",
+     "text": "ご視聴ありがとうございました",
+     "lp": -0.12,
+     "nsp": 0.0
+    }
+   ],
+   "halluc_rate": 1.0,
+   "halluc_rate_filtered": 0.0,
+   "lat2_p50": 137.8,
+   "lat2_p95": 146.0,
+   "lat5_p50": 164.3,
+   "lat5_p95": 188.4,
+   "lat10_p50": 181.7,
+   "lat10_p95": 209.0,
+   "rewrite_chars_per_step": 1.25,
+   "vram_peak_mib": 1278
+  }
+ ],
+ "winner": {
+  "model": "kotoba-whisper-v2.0",
+  "compute_type": "float16",
+  "beam_size": 1,
+  "device": "cuda:0",
+  "n": 200,
+  "load_s": 1.9,
+  "cer_public": 8.65,
+  "cer_public_kana": 3.55,
+  "n_public": 200,
+  "speech_rejected_public": 0.0,
+  "speech_rejected_public_examples": [],
+  "examples": [
+   {
+    "ref": "忘れちゃったの？.",
+    "hyp": "忘れちゃったの?"
+   },
+   {
+    "ref": "きょうこの店は肉が安いです。.",
+    "hyp": "今日この店は肉が安いです"
+   },
+   {
+    "ref": "ささいな話も笑いに変えてしまう天才.",
+    "hyp": "ささいな話も笑いに変えてしまう天才"
+   },
+   {
+    "ref": "照明用の巨大ライトが強くまたたく.",
+    "hyp": "照明用の巨大ライトが強く瞬く"
+   },
+   {
+    "ref": "卵に塩をつけて食べます。.",
+    "hyp": "卵に塩をつけて食べます"
+   }
+  ],
+  "cer_streams": null,
+  "hallucinations": [
+   {
+    "clip": "music0",
+    "text": "ごめん",
+    "lp": -0.42,
+    "nsp": 0.1
+   },
+   {
+    "clip": "music1",
+    "text": "ごめん",
+    "lp": -0.45,
+    "nsp": 0.08
+   },
+   {
+    "clip": "music2",
+    "text": "ごめん",
+    "lp": -0.45,
+    "nsp": 0.08
+   },
+   {
+    "clip": "music3",
+    "text": "ごめん",
+    "lp": -0.46,
+    "nsp": 0.07
+   },
+   {
+    "clip": "music4",
+    "text": "ごめん",
+    "lp": -0.46,
+    "nsp": 0.07
+   },
+   {
+    "clip": "music5",
+    "text": "ごめん",
+    "lp": -0.43,
+    "nsp": 0.08
+   },
+   {
+    "clip": "music6",
+    "text": "ごめん",
+    "lp": -0.45,
+    "nsp": 0.08
+   },
+   {
+    "clip": "music7",
+    "text": "ごめん",
+    "lp": -0.46,
+    "nsp": 0.08
+   },
+   {
+    "clip": "sfx0",
+    "text": "ごめん",
+    "lp": -0.6,
+    "nsp": 0.11
+   },
+   {
+    "clip": "sfx1",
+    "text": "ごめん",
+    "lp": -0.86,
+    "nsp": 0.13
+   },
+   {
+    "clip": "sfx2",
+    "text": "ごめん",
+    "lp": -0.78,
+    "nsp": 0.13
+   },
+   {
+    "clip": "sfx3",
+    "text": "ごめん",
+    "lp": -0.58,
+    "nsp": 0.14
+   },
+   {
+    "clip": "noise0",
+    "text": "ごちそう",
+    "lp": -0.54,
+    "nsp": 0.11
+   },
+   {
+    "clip": "noise1",
+    "text": "ごちそう",
+    "lp": -0.54,
+    "nsp": 0.12
+   },
+   {
+    "clip": "noise2",
+    "text": "ごちそう",
+    "lp": -0.56,
+    "nsp": 0.11
+   },
+   {
+    "clip": "noise3",
+    "text": "ごちそう",
+    "lp": -0.58,
+    "nsp": 0.11
+   },
+   {
+    "clip": "silence0",
+    "text": "ごめん",
+    "lp": -0.42,
+    "nsp": 0.09
+   },
+   {
+    "clip": "silence1",
+    "text": "ごめん",
+    "lp": -0.37,
+    "nsp": 0.09
+   }
+  ],
+  "halluc_rate": 1.0,
+  "halluc_rate_filtered": 0.0,
+  "lat2_p50": 100.2,
+  "lat2_p95": 105.8,
+  "lat5_p50": 109.5,
+  "lat5_p95": 117.0,
+  "lat10_p50": 120.3,
+  "lat10_p95": 134.3,
+  "rewrite_chars_per_step": 0.75,
+  "vram_peak_mib": 2046,
+  "decided_on": "cer_public"
+ }
+}

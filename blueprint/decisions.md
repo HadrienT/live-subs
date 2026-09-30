@@ -65,6 +65,49 @@ int8_float16), sans dépendre de flash-attention.
 - *Traduction directe par Whisper (`task=translate`)* : qualité nettement
   inférieure à un LLM, pas de contexte, et on perdrait la ligne japonaise.
 
+**Résultat du banc — 30/09/2026 (choix provisoire).**
+[`benchmarks/asr/results-2026-09-30.md`](../benchmarks/asr/results-2026-09-30.md),
+V100, 200 énoncés de Common Voice 8.0 ja :
+
+| | CER % | CER kana % | 5 s p50 / p95 ms | VRAM Mio |
+|---|---|---|---|---|
+| **kotoba-whisper-v2.0 fp16 beam 1** (retenu) | 8,65 | 3,55 | 110 / 117 | 2 046 |
+| large-v3 int8_float16 beam 5 (meilleur CER) | 8,19 | 3,10 | 276 / 420 | 2 110 |
+| large-v3 fp16 beam 1 | 8,32 | 3,12 | 212 / 295 | 3 678 |
+| large-v3-turbo fp16 beam 1 | 14,69 | 7,87 | 125 / 140 | 2 142 |
+
+Toutes les configurations respectent les contraintes dures (p95 ≤ 500 ms à 5 s,
+≤ 4 Gio). Les CER sont à moins d'un point les uns des autres, sauf turbo en
+beam 1 ; la règle départage donc sur la latence, et kotoba est 2 à 2,5× plus
+rapide que large-v3 : c'est ce qui compte pour re-décoder les `partial`
+chaque seconde. **Provisoire** : le jeu « streams » (parole spontanée, musique
+de fond) n'existe pas encore, il viendra des enregistrements du lot 02. Si
+large-v3 y prend plus d'un point d'avance, on repasse le banc. anime-whisper et
+ReazonSpeech n'ont pas été mesurés : à ajouter si le jeu « streams » est fait
+de VTubers.
+
+**Hallucinations : le seuil `no_speech_prob` de Whisper ne marche pas ici.**
+Sur 18 extraits de non-parole synthétique (musique, effets de jeu, bruit,
+silence pur), kotoba écrit « ごめん » ou « ごちそう » sur **100 %** d'entre eux,
+avec `no_speech_prob` ≈ 0,1 (< 0,2 partout, parole comprise) : le décodeur
+distillé a perdu ce signal. Ce qui discrimine, c'est `avg_logprob` (parole :
+p1 = −0,27 ; hallucinations : −0,37 à −0,86) combiné à une sortie creuse (3
+caractères pour 5 à 10 s d'audio). D'où la règle `sparse_low_confidence` de
+`livesubs.asr.filters` : rejet si `avg_logprob < −0,3` **et** moins de 2
+caractères par seconde. Résultat : 0 % d'hallucination après filtre, 0 % de
+vraie parole rejetée (0,5 à 1,5 % pour turbo). Le VAD reste la première
+barrière : Silero ne s'est ouvert sur aucun de ces extraits.
+
+**Threads CPU.** Sans limite, OpenBLAS lance un thread par cœur (56) pour le
+mel-spectrogramme de faster-whisper : 110 s de CPU pour 2,6 s de décodage, sur
+un hôte partagé. Plafonné à 2–4 threads : 5 s de CPU, même latence. Le serveur
+fixe `OMP_NUM_THREADS` / `OPENBLAS_NUM_THREADS` (`LIVESUBS_CPU_THREADS`, 4).
+
+**VRAM partagée.** Pendant le banc, `llama-server` est repassé sur GPU
+(AgenticEnv#15) et occupe ~12,9 Gio sur GPU 0 et ~12,2 Gio sur GPU 1 : il reste
+~3 Gio sur GPU 0. kotoba (2 Gio) y tient ; large-v3 fp16 (3,7 Gio) n'y tient
+plus et a été mesuré sur GPU 1.
+
 ---
 
 ## ADR-003 — Traduction par le `llama-server` d'AgenticEnv, avec des profils de modèle
