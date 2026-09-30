@@ -90,6 +90,10 @@ class VadParams:
     max_segment_s: float = 12.0
     pad_ms: int = 200
     update_interval_s: float = 1.0
+    # Reset Silero's recurrent state after this long without speech (0 = never).
+    # After loud speech or music its state masks the next quiet voice (WP12, ADR-008).
+    reset_after_s: float = 1.0
+    reset_below: float = 0.2
 
     @property
     def neg_threshold(self) -> float:

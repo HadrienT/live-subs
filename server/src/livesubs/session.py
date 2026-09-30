@@ -66,6 +66,8 @@ class Session:
         self._segmenter = Segmenter(vad_params)
         self._sink = sink
         self._vad_cursor: int | None = None
+        self._params = vad_params
+        self._quiet_windows = 0
         self.paused = False
         self.segments_closed = 0
         self.metrics = SessionMetrics(self.id)
@@ -106,8 +108,17 @@ class Session:
             end = self._vad_cursor + WINDOW_SAMPLES
             prob = self._vad.prob(ring.read(self._vad_cursor, end))
             self._vad_cursor = end
+            self._maybe_reset_vad(prob)
             for seg in self._segmenter.push(end, prob):
                 self._dispatch(seg)
+
+    def _maybe_reset_vad(self, prob: float) -> None:
+        params = self._params
+        self._quiet_windows = self._quiet_windows + 1 if prob < params.reset_below else 0
+        quiet_s = self._quiet_windows * WINDOW_SAMPLES / p.SAMPLE_RATE
+        if params.reset_after_s and quiet_s >= params.reset_after_s and not self._segmenter.is_open:
+            self._vad.reset()
+            self._quiet_windows = 0
 
     def _dispatch(self, seg: SpeechSegment) -> None:
         if seg.is_closed:

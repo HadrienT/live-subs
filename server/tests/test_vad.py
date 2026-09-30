@@ -66,3 +66,38 @@ def test_silero_loads_and_rejects_silence() -> None:
     probs = [vad.prob(np.zeros(WINDOW_SAMPLES, dtype=np.float32)) for _ in range(10)]
     assert all(0.0 <= q < 0.2 for q in probs)
     vad.reset()
+
+
+class CountingVad:
+    """Energy VAD that counts resets."""
+
+    def __init__(self) -> None:
+        self.inner = EnergyVad()
+        self.resets = 0
+
+    def prob(self, window: np.ndarray) -> float:
+        return self.inner.prob(window)
+
+    def reset(self) -> None:
+        self.resets += 1
+
+
+def test_session_resets_vad_state_after_quiet() -> None:
+    from livesubs import protocol as p
+    from livesubs.session import Session, VadOnlySink
+
+    from .audio import to_frames
+
+    vad = CountingVad()
+    hello = p.Hello(protocol_version=p.PROTOCOL_VERSION, video_id="v")
+    session = Session(
+        hello,
+        vad=vad,
+        vad_params=VadParams(reset_after_s=1.0),
+        sink=VadOnlySink(),
+        emit=lambda m: None,
+    )
+    # 0.5 s of silence: no reset; speech; then 2.5 s of silence: two resets
+    for frame in to_frames(concat(silence(0.5), speech(1), silence(2.5))):
+        session.on_frame(frame)
+    assert vad.resets == 2

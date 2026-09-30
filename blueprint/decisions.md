@@ -273,3 +273,33 @@ n'a pas besoin.
 c'est l'effet du partage de llama-server, que seule une mesure pendant un tour
 d'OpenHands donnera. La fusion des traductions en retard (lot 06 §3) est la
 parade prévue.
+
+---
+
+## ADR-008 — Remettre l'état de Silero à zéro après 1 s sans parole
+
+**Constat (rejeu doré du lot 12, 30/09/2026).** Des débuts de phrase
+disparaissaient (« 個人情報を集めようとする… » → « 集めようとする… »), une
+phrase courte entière aussi (« はいはい »), et la phrase qui suit 10 s de
+musique était amputée. Isolés, ces extraits sont bien détectés par Silero
+(≈ 50 % de fenêtres de parole) ; dans le flux, non. C'est **l'état récurrent**
+de Silero : après une voix forte, puis une voix 20 dB plus faible, ou après de
+la musique, il reste bas trop longtemps.
+
+**Décision.** La session remet l'état de Silero à zéro dès qu'il a vu 1 s de
+suite sans parole (probabilité < 0,2) et qu'aucun segment n'est ouvert
+(`LIVESUBS_VAD_RESET_AFTER_S`, 0 pour désactiver).
+
+**Chiffres** (VAD → kotoba par segment → CER bout en bout, filtre compris) :
+
+| | speech_a | speech_b | speech_bgm | music_gap | CV enchaîné 5 min |
+|---|---|---|---|---|---|
+| sans remise à zéro | 10,1 % | 6,7 % | 12,9 % | 15,1 % | 9,5 % |
+| seuil 0,35 | 6,7 % | 6,7 % | 12,9 % | 9,4 % | 9,3 % |
+| **remise à zéro après 1 s** | **2,2 %** | **3,4 %** | 12,9 % | **0,0 %** | **9,1 %** |
+| remise à zéro après 0,5 s | 2,2 % | 3,4 % | 12,9 % | 13,2 % | 9,1 % |
+
+Aucun faux segment sur la musique dans aucune variante. Le seuil reste à 0,5.
+À revérifier sur de vrais streams (bruits de jeu, musique chantée), où une
+remise à zéro trop fréquente pourrait ouvrir des segments sur du bruit : le
+filtre d'hallucinations reste la seconde barrière.
