@@ -98,8 +98,10 @@ export class Capture {
     const attempt = async (moduleUrl: string, label: string): Promise<Resampler | null> => {
       try {
         await ctx.audioWorklet.addModule(moduleUrl);
-        const node = new AudioWorkletNode(ctx, "live-subs-downsampler", { numberOfOutputs: 0 });
+        const node = new AudioWorkletNode(ctx, "live-subs-downsampler");
         node.port.onmessage = (e: MessageEvent<ArrayBuffer>) => this.onPcm(new Int16Array(e.data));
+        // Only nodes pulled by the destination are sure to run: connect through silence.
+        node.connect(this.silentSink(ctx));
         this.how.push(`AudioWorklet (${label})`);
         return { node, reset: () => node.port.postMessage("reset") };
       } catch (e) {
@@ -126,11 +128,16 @@ export class Capture {
       for (let c = 0; c < b.numberOfChannels; c++) chans.push(b.getChannelData(c));
       ds.push(chans);
     };
-    const mute = ctx.createGain();
-    mute.gain.value = 0;
-    sp.connect(mute).connect(ctx.destination); // a ScriptProcessor only runs when pulled
+    sp.connect(this.silentSink(ctx)); // a ScriptProcessor only runs when pulled
     this.how.push("ScriptProcessorNode");
     return { node: sp, reset: () => ds.reset() };
+  }
+
+  private silentSink(ctx: AudioContext): AudioNode {
+    const mute = ctx.createGain();
+    mute.gain.value = 0;
+    mute.connect(ctx.destination);
+    return mute;
   }
 
   private onPcm(pcm: Int16Array): void {
