@@ -11,4 +11,8 @@ export default tseslint.config(
       globals: { ...globals.browser, ...globals.node, browser: "readonly" },
     },
   },
+  {
+    files: ["spike/worklet.js", "src/worklet/**"],
+    languageOptions: { globals: globals.audioWorklet },
+  },
 );

@@ -61,3 +61,7 @@ fake-server port="8765":
 # Regenerate the protocol description compared by the TS drift test
 protocol-schema:
     cd {{server}} && uv run python -m livesubs.protocol > src/livesubs/protocol.schema.json
+
+# Build the public CC0 benchmark set (Common Voice 8.0 ja) in benchmarks/data/public/
+bench-prepare *args:
+    cd {{server}} && uv run --group bench python ../benchmarks/prepare_public.py {{args}}
