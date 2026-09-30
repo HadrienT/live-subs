@@ -40,7 +40,7 @@ golden-fixtures:
 
 # Run the server locally on ws://0.0.0.0:8765
 run-server:
-    cd {{server}} && uv run --extra gpu python -m livesubs
+    cd {{server}} && uv run --extra gpu --extra ahead python -m livesubs
 
 # Replay an audio file into a running server, like the extension would
 replay file *args:

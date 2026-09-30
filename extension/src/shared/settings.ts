@@ -1,6 +1,11 @@
 // User settings, persisted in storage.local (survive Firefox restarts).
 
 export type DisplayMode = "both" | "en" | "ja";
+/** % of the player: bottom edge of the subtitles, horizontal centre. */
+export interface SubtitlePosition {
+  bottomPct: number;
+  centerPct?: number; // absent in settings saved before horizontal dragging
+}
 export type CaptureMethod = "auto" | "captureStream" | "mediaElementSource";
 export type WorkletMode = "auto" | "extension" | "blob" | "scriptProcessor";
 
@@ -12,7 +17,7 @@ export interface Settings {
   twoLines: boolean; // previous sentence above, smaller
   fontScale: number; // × the default size (relative to the player height)
   opacity: number; // background opacity 0..1
-  position: { bottomPct: number } | null; // dragged position, % from the player bottom
+  position: SubtitlePosition | null; // dragged position (null = default, above the controls)
   alwaysChannels: string[]; // channel ids captured automatically
   // Fallbacks decided by the WP02 spike; "auto" tries them in order.
   captureMethod: CaptureMethod;
@@ -38,7 +43,7 @@ export const DEFAULT_SETTINGS: Settings = {
   hud: false,
   historySessions: 20,
   aheadMode: false,
-  aheadDelayS: 6,
+  aheadDelayS: 10,
 };
 
 export function withDefaults(stored: Partial<Settings> | undefined): Settings {

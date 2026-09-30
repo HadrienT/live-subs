@@ -99,3 +99,19 @@ describe("view", () => {
     expect(after.lines.map((l) => l.segId)).toEqual([1]);
   });
 });
+
+describe("dragging the subtitles", () => {
+  const player = { left: 100, bottom: 800, width: 1000, height: 600 };
+
+  test("keeps the grabbed point under the pointer", async () => {
+    const { positionFromPointer } = await import("../src/content/overlay");
+    // pointer at 60 % across, 25 % up; grabbed 20 px right of centre, 10 px above the bottom
+    expect(positionFromPointer(player, 720, 640, { dx: 20, dy: 10 })).toEqual({ centerPct: 60, bottomPct: 25 });
+  });
+
+  test("stays inside the player", async () => {
+    const { positionFromPointer } = await import("../src/content/overlay");
+    expect(positionFromPointer(player, -500, 5000, { dx: 0, dy: 0 })).toEqual({ centerPct: 10, bottomPct: 0 });
+    expect(positionFromPointer(player, 5000, -500, { dx: 0, dy: 0 })).toEqual({ centerPct: 90, bottomPct: 90 });
+  });
+});

@@ -60,7 +60,9 @@ def test_only_youtube_ids_are_pulled() -> None:
 
 def test_ahead_mode_aligns_and_subtitles_arrive_before_the_player() -> None:
     live = talk(36, seed=11)
-    client = client_for(lambda _vid: ArraySource(live, speed=SPEED))
+    # this simulated live pauses 0.1–0.8 s: keep capture-mode cuts so sentences stay
+    # shorter than the 5 s lead (the 800 ms default has its own test below)
+    client = client_for(lambda _vid: ArraySource(live, speed=SPEED), ahead_min_silence_ms=400)
     received: list[tuple[float, dict[str, Any]]] = []
     sent_media = [0.0]
     with client, client.websocket_connect("/ws") as ws:
@@ -143,3 +145,41 @@ def test_fallback_when_alignment_never_succeeds() -> None:
                 break
     assert failed is not None
     assert "align" in failed["message"]
+
+
+def test_inner_session_waits_longer_and_skips_partials() -> None:
+    from livesubs import protocol as proto
+    from livesubs.app import start_ahead
+    from livesubs.session import Session, VadOnlySink
+    from livesubs.vad import EnergyVad, VadParams
+
+    s = Settings(
+        vad_backend="energy", asr_backend="fake", mt_backend="none", ahead_min_silence_ms=900
+    )
+    services = default_services(s)
+    services.load_transcriber = FakeTranscriber
+    services.make_source = lambda _vid: ArraySource(np.zeros(16000, np.float32), speed=0)
+    hello_msg = proto.Hello(
+        protocol_version=proto.PROTOCOL_VERSION, video_id="dQw4w9WgXcQ", mode="ahead"
+    )
+
+    async def run() -> None:
+        await services.start()
+        outer = Session(
+            hello_msg,
+            vad=EnergyVad(),
+            vad_params=VadParams(),
+            sink=VadOnlySink(),
+            emit=lambda m: None,
+        )
+        ctl = start_ahead(hello_msg, outer, services)
+        assert ctl is not None
+        assert ctl.inner.show_partials is False
+        assert ctl.inner._params.min_silence_ms == 900
+        assert outer._params.min_silence_ms == 400  # capture mode unchanged
+        await ctl.aclose()
+        await services.stop()
+
+    import asyncio
+
+    asyncio.run(run())

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import dataclasses
 import logging
 from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass, field
@@ -301,16 +302,24 @@ def start_ahead(hello: p.Hello, outer: Session, services: Services) -> AheadCont
         return None
     inner_hello = hello.model_copy(update={"mode": "capture"})
 
+    inner_vad = dataclasses.replace(
+        settings.vad_params(), min_silence_ms=settings.ahead_min_silence_ms
+    )
+
     def make_inner(emit: Callable[[p.ServerMessage], None]) -> Session:
-        return Session(
+        inner = Session(
             inner_hello,
             vad=services.make_vad(),
-            vad_params=settings.vad_params(),
+            vad_params=inner_vad,
             sink=services.make_sink(inner_hello),
             emit=emit,
             ring_seconds=settings.ring_seconds,
             first_seg_id=INNER_FIRST_SEG_ID,
         )
+        # The final is ready long before the player gets there: partials would
+        # only take GPU time from it.
+        inner.show_partials = False
+        return inner
 
     controller = AheadController(
         outer,

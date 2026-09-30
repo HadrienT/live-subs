@@ -302,9 +302,15 @@ browser.runtime.onMessage.addListener((raw: unknown) => {
 async function main(): Promise<void> {
   settings = await loadSettings();
   hudOn = settings.hud;
-  overlay = new Overlay(settings, (bottomPct) => {
-    void saveSettings({ position: bottomPct < 0 ? null : { bottomPct } });
-  });
+  overlay = new Overlay(
+    settings,
+    (position) => void saveSettings({ position }),
+    () => {
+      // a plain click on the subtitles still plays / pauses, like on the video
+      const v = capture?.video ?? findVideo();
+      if (v) void (v.paused ? v.play() : v.pause());
+    },
+  );
   panel = new TranscriptPanel((t) => {
     const v = capture?.video ?? findVideo();
     if (v) v.currentTime = t;

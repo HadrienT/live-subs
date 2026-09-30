@@ -73,6 +73,9 @@ class Settings(BaseSettings):
     ahead_capture_window_s: float = 15.0  # captured audio used to align the timelines
     ahead_max_lag_s: float = 120.0  # how far ahead of the player the pulled live may be
     ahead_fail_after_s: float = 45.0  # then fall back to transcribing the capture
+    # With seconds of lead there is no hurry to close a sentence: wait for a real
+    # pause, so the translator gets whole sentences instead of breath-cut halves.
+    ahead_min_silence_ms: int = 800
     glossary_dir: Path | None = Path(__file__).resolve().parents[3] / "glossaries"
 
     def vad_params(self) -> VadParams:
