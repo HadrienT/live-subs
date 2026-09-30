@@ -76,8 +76,11 @@ class PlamoTranslator(LlamaServerTranslator):
             "stop": [OP],
         }
 
-    async def translate(self, seg: FinalSegment, ctx: TranslationContext) -> AsyncIterator[str]:
-        async for piece in self._stream(
-            "/completions", self.payload(seg.ja, ctx), _completion_text
-        ):
+    async def translate(
+        self, seg: FinalSegment, ctx: TranslationContext, *, retry: bool = False
+    ) -> AsyncIterator[str]:
+        body = self.payload(seg.ja, ctx)
+        if retry:
+            body["cache_prompt"] = False
+        async for piece in self._stream("/completions", body, _completion_text):
             yield piece
