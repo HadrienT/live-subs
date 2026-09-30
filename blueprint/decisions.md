@@ -356,3 +356,19 @@ direct diffusait de la musique. yt-dlp signale aussi qu'il n'a pas de runtime
 JS (deno) : les directs essayés ont fourni leur format audio sans, mais
 YouTube peut changer ça. Les directs réservés aux membres restent hors
 périmètre (cookies).
+
+**Rediffusions (01/10/2026).** Le premier essai réel s'est fait sur une
+rediffusion, et le mode en avance est retombé sur la capture : yt-dlp lit une
+rediffusion depuis son début, pas depuis la position du lecteur, donc rien à
+aligner. Une rediffusion est pourtant le cas le plus simple : l'enregistrement
+entier existe, et son temps est celui de la vidéo. Le serveur demande donc
+d'abord à yt-dlp si la vidéo est un direct (`live_status == "is_live"`) :
+- **direct** : comportement ci-dessus (bord du direct, alignement, lecteur
+  gardé `aheadDelayS` en retard) ;
+- **rediffusion** : ffmpeg lit l'audio (URL fournie par yt-dlp) **à partir de la
+  position du lecteur**, plus vite que le temps réel (~75×), jusqu'à
+  `LIVESUBS_AHEAD_REPLAY_LEAD_S` (60 s) d'avance ; `offset = −début`, sans
+  alignement ; le lecteur n'est pas retardé ; à chaque saut hors de la fenêtre
+  déjà lue, la lecture repart de la nouvelle position ; lecteur en pause =
+  lecture en pause. Pas de fusion des traductions en retard : il y a le temps
+  d'en faire une par phrase.

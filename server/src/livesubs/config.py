@@ -76,6 +76,8 @@ class Settings(BaseSettings):
     # With seconds of lead there is no hurry to close a sentence: wait for a real
     # pause, so the translator gets whole sentences instead of breath-cut halves.
     ahead_min_silence_ms: int = 800
+    # Replays: how far ahead of the player the server reads (and transcribes)
+    ahead_replay_lead_s: float = 60.0
     glossary_dir: Path | None = Path(__file__).resolve().parents[3] / "glossaries"
 
     def vad_params(self) -> VadParams:

@@ -16,7 +16,7 @@ from pydantic import ValidationError
 from livesubs import __version__
 from livesubs import protocol as p
 from livesubs.ahead.controller import INNER_FIRST_SEG_ID, AheadController
-from livesubs.ahead.source import PcmSource, SourceError, YtDlpSource
+from livesubs.ahead.source import Resolver, SourceError, YouTubeResolver
 from livesubs.asr.base import Transcriber
 from livesubs.asr.fake import FakeTranscriber
 from livesubs.asr.scheduler import GpuScheduler
@@ -49,7 +49,7 @@ class Services:
     glossaries: GlossaryStore = field(default_factory=lambda: GlossaryStore(None))
     scheduler: GpuScheduler | None = None
     sessions: dict[str, Session] = field(default_factory=dict)
-    make_source: Callable[[str], PcmSource] = YtDlpSource  # ahead mode, from a video id
+    make_resolver: Callable[[str], Resolver] = YouTubeResolver  # ahead mode, from a video id
 
     @property
     def warm(self) -> bool:
@@ -76,7 +76,7 @@ class Services:
     def mt_model(self) -> str | None:
         return self.translator.name if self.translator is not None else None
 
-    def make_sink(self, hello: p.Hello) -> SegmentSink:
+    def make_sink(self, hello: p.Hello, *, merge_after: int | None = None) -> SegmentSink:
         if self.load_transcriber is None:
             return VadOnlySink()
         if self.scheduler is None:
@@ -89,7 +89,7 @@ class Services:
                 self.translator,
                 glossary=glossary,
                 history_len=s.mt_history,
-                merge_after=s.mt_merge_after,
+                merge_after=s.mt_merge_after if merge_after is None else merge_after,
                 timeout_s=s.mt_timeout_s,
             )
         return StreamingAsrSink(
@@ -294,7 +294,7 @@ def start_ahead(hello: p.Hello, outer: Session, services: Services) -> AheadCont
         reason = "ahead mode needs the ASR pipeline"
     if reason is None:
         try:
-            source = services.make_source(hello.video_id)
+            resolver = services.make_resolver(hello.video_id)
         except SourceError as e:
             reason = str(e)
     if reason is not None:
@@ -306,12 +306,14 @@ def start_ahead(hello: p.Hello, outer: Session, services: Services) -> AheadCont
         settings.vad_params(), min_silence_ms=settings.ahead_min_silence_ms
     )
 
-    def make_inner(emit: Callable[[p.ServerMessage], None]) -> Session:
+    def make_inner(emit: Callable[[p.ServerMessage], None], replay: bool) -> Session:
         inner = Session(
             inner_hello,
             vad=services.make_vad(),
             vad_params=inner_vad,
-            sink=services.make_sink(inner_hello),
+            # a replay is read faster than real time: merging queued sentences into
+            # one request would only hurt the translation, there is time for each
+            sink=services.make_sink(inner_hello, merge_after=1_000_000 if replay else None),
             emit=emit,
             ring_seconds=settings.ring_seconds,
             first_seg_id=INNER_FIRST_SEG_ID,
@@ -324,7 +326,8 @@ def start_ahead(hello: p.Hello, outer: Session, services: Services) -> AheadCont
     controller = AheadController(
         outer,
         make_inner,
-        source,
+        resolver,
+        replay_lead_s=settings.ahead_replay_lead_s,
         capture_window_s=settings.ahead_capture_window_s,
         max_lag_s=settings.ahead_max_lag_s,
         fail_after_s=settings.ahead_fail_after_s,

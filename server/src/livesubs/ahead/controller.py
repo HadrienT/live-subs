@@ -26,7 +26,7 @@ from numpy.typing import NDArray
 
 from livesubs import protocol as p
 from livesubs.ahead.align import find_lag
-from livesubs.ahead.source import PcmSource
+from livesubs.ahead.source import PcmSource, Resolver
 from livesubs.ingest import AudioRing
 from livesubs.session import Session
 
@@ -40,9 +40,11 @@ class AheadController:
     def __init__(
         self,
         outer: Session,
-        make_inner: Callable[[Callable[[p.ServerMessage], None]], Session],
-        source: PcmSource,
+        # (emit, replay) → inner session; replay: no merging of late translations
+        make_inner: Callable[[Callable[[p.ServerMessage], None], bool], Session],
+        resolver: Resolver,
         *,
+        replay_lead_s: float = 60.0,
         capture_window_s: float = 15.0,
         max_lag_s: float = 120.0,
         retry_s: float = 2.0,
@@ -51,8 +53,18 @@ class AheadController:
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
         self.outer = outer
-        self.inner = make_inner(self._emit_inner)
-        self.source = source
+        self._make_inner = make_inner
+        self._gen = 0  # bumped on each (re)start: late messages of an old inner are dropped
+        self.inner = self._new_inner()
+        self.resolver = resolver
+        self.source: PcmSource | None = None
+        self.replay: bool | None = None  # unknown until probed
+        self.replay_lead_s = replay_lead_s
+        self._replay_start = 0.0
+        self._player_pos: float | None = None
+        self._restart = asyncio.Event()
+        self._player_moved = asyncio.Event()  # set by every captured frame
+        self._last_status = -1e9
         self.capture_window_s = capture_window_s
         self.retry_s = retry_s
         self.realign_s = realign_s
@@ -82,11 +94,31 @@ class AheadController:
             self._task.cancel()
             with contextlib.suppress(asyncio.CancelledError, Exception):
                 await self._task
-        await self.source.aclose()
+        if self.source is not None:
+            await self.source.aclose()
         await self.inner.close()
+
+    def _new_inner(self, replay: bool = False) -> Session:
+        self._gen += 1
+        gen = self._gen
+        return self._make_inner(lambda msg: self._emit_inner(msg, gen), replay)
 
     async def _pull(self) -> None:
         try:
+            self.replay = not await self.resolver.probe()
+        except asyncio.CancelledError:
+            raise
+        except Exception as e:
+            self._fail(f"cannot open the video: {e}")
+            return
+        if self.replay:
+            await self._pull_replay()
+        else:
+            await self._pull_live()
+
+    async def _pull_live(self) -> None:
+        try:
+            self.source = self.resolver.live_source()
             async for chunk in self.source.chunks():
                 pcm = np.clip(chunk * 32768, -32768, 32767).astype(np.int16)
                 frame = p.AudioFrame(self._source_total, self._source_total / SR, pcm)
@@ -99,6 +131,57 @@ class AheadController:
             log.warning("ahead source failed: %s", e)
             self._fail(f"cannot pull the live: {e}")
 
+    async def _pull_replay(self) -> None:
+        """Replay: read from the player's position, up to ``replay_lead_s`` ahead of
+        it, and start over wherever the player jumps. Video time is the replay's own
+        timeline, so there is nothing to align: offset = −start."""
+        while self._player_pos is None:
+            await self._wait_player()
+        while True:
+            self._restart.clear()
+            start = self._player_pos
+            if self.source is not None:
+                await self.source.aclose()
+            await self.inner.close()
+            self.inner = self._new_inner(replay=True)
+            self._replay_start = start
+            self._source_total = 0
+            self.offset_s = -start
+            self.state = "aligned"
+            self._emit_status()
+            try:
+                self.source = self.resolver.replay_source(start)
+                async for chunk in self.source.chunks():
+                    # far enough ahead: wait for the player (stays put while paused)
+                    while self._ahead_of_player() > self.replay_lead_s:
+                        if self._restart.is_set():
+                            break
+                        await self._wait_player()
+                    if self._restart.is_set():
+                        break
+                    pcm = np.clip(chunk * 32768, -32768, 32767).astype(np.int16)
+                    frame = p.AudioFrame(self._source_total, self._source_total / SR, pcm)
+                    self._source_total += len(chunk)
+                    self.inner.on_frame(frame)
+                else:
+                    self.inner.on_pause()  # end of the replay: close the last sentence
+                    await self._restart.wait()
+            except asyncio.CancelledError:
+                raise
+            except Exception as e:
+                log.warning("replay source failed: %s", e)
+                self._fail(f"cannot read the replay: {e}")
+                return
+
+    async def _wait_player(self) -> None:
+        self._player_moved.clear()
+        await self._player_moved.wait()
+
+    def _ahead_of_player(self) -> float:
+        if self._player_pos is None:
+            return 0.0
+        return self._replay_start + self._source_total / SR - self._player_pos
+
     def _append_source(self, chunk: NDArray[np.float32]) -> None:
         self._source.write(chunk)
         self._source_total += len(chunk)
@@ -109,6 +192,13 @@ class AheadController:
         """Outer session hook: True = consumed (not transcribed from the capture)."""
         if self.state == "failed":
             return False
+        self._player_pos = frame.media_time
+        self._player_moved.set()
+        if self.replay is None:
+            return True  # still probing: nothing to transcribe from yet
+        if self.replay:
+            self._follow_player(frame.media_time)
+            return True
         if frame.discontinuity:
             self._capture.clear()
         self._capture.append((frame.media_time, frame.pcm.astype(np.float32) / 32768.0))
@@ -142,18 +232,31 @@ class AheadController:
             log.debug("ahead: no alignment yet (conf %.2f, sharp %.2f)", a.confidence, a.sharpness)
             self._check_timeout(now)
 
+    def _follow_player(self, media_time: float) -> None:
+        """Replay: restart the reading if the player left the prefetched window."""
+        read_to = self._replay_start + self._source_total / SR
+        if media_time < self._replay_start - 1.0 or media_time > read_to + 1.0:
+            log.info("ahead: player jumped to %.1f s, reading from there", media_time)
+            self._restart.set()
+            self._player_moved.set()
+        elif self.clock() - self._last_status > 10.0:
+            self._emit_status()
+
     def _check_timeout(self, now: float) -> None:
         if self.state == "aligning" and now - self._started > self.fail_after_s:
             self._fail("could not align the live with the player")
 
     @property
     def lead_s(self) -> float | None:
+        if self.replay:
+            return self._ahead_of_player()
         if self.offset_s is None or not self._capture:
             return None
         video_now = self._capture[-1][0] + p.FRAME_SAMPLES / SR
         return self._source_total / SR - self.offset_s - video_now
 
     def _emit_status(self, message: str | None = None) -> None:
+        self._last_status = self.clock()
         lead = self.lead_s
         self.outer.emit(
             p.AheadStatus(
@@ -174,7 +277,9 @@ class AheadController:
 
     # ------------------------------------------------------------------ inner → client
 
-    def _emit_inner(self, msg: p.ServerMessage) -> None:
+    def _emit_inner(self, msg: p.ServerMessage, gen: int) -> None:
+        if gen != self._gen:
+            return  # from an inner session replaced after a jump
         if self.state != "aligned" or self.offset_s is None:
             if isinstance(msg, p.Error):
                 self.outer.emit(msg)
