@@ -56,10 +56,15 @@ class Settings(BaseSettings):
     # --- Translation (WP06): AgenticEnv's llama-server, OpenAI-compatible (ADR-003)
     mt_backend: str = "llama"  # "llama" | "fake" | "none"
     llm_base_url: str = "http://127.0.0.1:8000/v1"  # in Docker: http://172.17.0.1:8001/v1
-    llm_model: str = "translate"  # name of the model of AgenticEnv's `translate` profile
+    # served_name of AgenticEnv's `translate` profile (configs/models.yaml there)
+    llm_model: str = "plamo-2-translate"
     llm_temperature: float = 0.2
     llm_max_tokens: int = 120
     llm_disable_thinking: bool = True
+    # How the model is prompted: "chat" (instruct models, /v1/chat/completions),
+    # "plamo" (PLaMo 2 Translate's raw format, /v1/completions), or "auto":
+    # plamo when the model name contains "plamo".
+    llm_prompt_format: str = "auto"
     mt_timeout_s: float = 8.0
     mt_merge_after: int = 3
     mt_history: int = 6

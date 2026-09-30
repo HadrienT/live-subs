@@ -26,6 +26,7 @@ from livesubs.mt.base import Translator
 from livesubs.mt.fake import FakeTranslator
 from livesubs.mt.glossary import GlossaryStore
 from livesubs.mt.llama import LlamaServerTranslator
+from livesubs.mt.plamo import PlamoTranslator
 from livesubs.mt.worker import TranslationWorker
 from livesubs.pipeline import StreamingAsrSink
 from livesubs.session import SegmentSink, Session, VadOnlySink
@@ -135,7 +136,13 @@ def build_translator(settings: Settings) -> Translator | None:
         case "fake":
             return FakeTranslator()
         case "llama":
-            return LlamaServerTranslator(
+            fmt = settings.llm_prompt_format
+            if fmt == "auto":
+                fmt = "plamo" if "plamo" in settings.llm_model.lower() else "chat"
+            if fmt not in ("chat", "plamo"):
+                raise ValueError(f"unknown LIVESUBS_LLM_PROMPT_FORMAT {fmt!r}")
+            cls = PlamoTranslator if fmt == "plamo" else LlamaServerTranslator
+            return cls(
                 settings.llm_base_url,
                 settings.llm_model,
                 temperature=settings.llm_temperature,

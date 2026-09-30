@@ -15,7 +15,7 @@ services:
     environment:
       LIVESUBS_ASR_DEVICE: cuda:0
       LIVESUBS_LLM_BASE_URL: http://172.17.0.1:8001/v1 # AgenticEnv's llama-bridge
-      LIVESUBS_LLM_MODEL: ${LIVESUBS_LLM_MODEL:-translate}
+      LIVESUBS_LLM_MODEL: ${LIVESUBS_LLM_MODEL:-plamo-2-translate}
       LIVESUBS_TOKEN: ${LIVESUBS_TOKEN:-}
       LIVESUBS_LOG_LEVEL: ${LIVESUBS_LOG_LEVEL:-info}
     volumes:

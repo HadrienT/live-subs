@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import logging
 import time
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 from typing import Any
 
 import httpx
@@ -22,6 +22,11 @@ log = logging.getLogger(__name__)
 
 class MtUnreachableError(Exception):
     pass
+
+
+def _chat_delta(chunk: dict[str, Any]) -> str:
+    choices = chunk.get("choices") or [{}]
+    return str(choices[0].get("delta", {}).get("content") or "")
 
 
 class LlamaServerTranslator:
@@ -77,11 +82,16 @@ class LlamaServerTranslator:
 
     async def translate(self, seg: FinalSegment, ctx: TranslationContext) -> AsyncIterator[str]:
         body = self.payload(seg.ja, ctx)
+        async for piece in self._stream("/chat/completions", body, _chat_delta):
+            yield piece
+
+    async def _stream(
+        self, path: str, body: dict[str, Any], extract: Callable[[dict[str, Any]], str]
+    ) -> AsyncIterator[str]:
+        """SSE loop shared by chat and raw completions: yields one subtitle line."""
         started = False
         try:
-            async with self._client.stream(
-                "POST", f"{self.base_url}/chat/completions", json=body
-            ) as resp:
+            async with self._client.stream("POST", f"{self.base_url}{path}", json=body) as resp:
                 if resp.status_code >= 400:
                     detail = (await resp.aread())[:200].decode("utf-8", "replace")
                     raise MtUnreachableError(f"llama-server HTTP {resp.status_code}: {detail}")
@@ -91,9 +101,7 @@ class LlamaServerTranslator:
                     data = line[5:].strip()
                     if data == "[DONE]":
                         break
-                    chunk = json.loads(data)
-                    choices = chunk.get("choices") or [{}]
-                    delta = choices[0].get("delta", {}).get("content") or ""
+                    delta = extract(json.loads(data))
                     if not delta:
                         continue
                     if not started:

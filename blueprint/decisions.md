@@ -157,6 +157,19 @@ préférence :
   Gemma 3 27B. Condition : servable par llama.cpp sur Volta, ≤ 20 Gio avec le
   contexte nécessaire (8k suffisent pour traduire).
 
+**Modèle du profil `translate` (30/09/2026) : PLaMo 2 Translate, Q8_0.**
+Téléchargé depuis `mitmul/plamo-2-translate-GGUF` (révision `4d65036c`), 9,8 Gio.
+C'est le seul candidat spécialisé en traduction, et il reste le premier à passer
+au banc du lot 06. Il **n'est pas un modèle de chat** : il attend un prompt brut en
+blocs `<|plamo:op|>` (`dataset / translation`, puis des tours
+`input lang=Japanese` / `output lang=English`), `temperature 0`, et un arrêt sur
+`<|plamo:op|>`. live-subs l'appelle donc sur `/v1/completions`
+(`livesubs.mt.plamo`, choisi automatiquement quand le nom du modèle contient
+« plamo »), sans template de chat côté llama-server. Le contexte glissant passe
+par des tours précédents ; le glossaire, qu'il ne peut pas lire comme une
+consigne, par des tours déjà traduits (« ぺこら » → « Pekora »). Licence PLaMo
+Community : l'usage personnel est libre.
+
 **Écarté.**
 - *Traduire avec Qwen3-Coder* : c'était la proposition initiale, écartée par le
   mainteneur. On veut le meilleur traducteur, pas un compromis.
