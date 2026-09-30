@@ -1,0 +1,22 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Node / extension
+node_modules/
+extension/dist/
+extension/dist-signed/
+*.xpi
+
+# Secrets & local config
+.env
+
+# Benchmark audio and model caches (never versioned)
+benchmarks/data/
+models/
+*.wav
+!server/tests/fixtures/**/*.wav
