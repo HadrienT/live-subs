@@ -211,8 +211,8 @@ function onBackground(m: BgToContent): void {
 
 function onServer(msg: ServerMessage): void {
   const now = performance.now();
-  state = reduce(state, { type: "server", msg, now });
   const v = capture?.video;
+  state = reduce(state, { type: "server", msg, now, ...(v ? { mediaTime: v.currentTime } : {}) });
   const measurable = !!v && !v.paused && !v.seeking && v.playbackRate === 1;
   switch (msg.type) {
     case "final":
@@ -249,7 +249,7 @@ function tick(): void {
   const v = capture?.video ?? findVideo();
   const now = performance.now();
   if (capture && v) overlay.render(view(state, v.currentTime), controlsVisible());
-  else overlay.render({ current: null, previous: null, banner: null }, false);
+  else overlay.render({ current: null, previous: null, overlap: false, banner: null }, false);
   if (hudOn) {
     const l = tracker.summary(now);
     overlay.setHud(

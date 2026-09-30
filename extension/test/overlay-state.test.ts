@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { EXPIRE_S, MODE_CODE_BANNER, initialState, reduce, view, type OverlayState } from "../src/content/overlay-state";
+import { MODE_CODE_BANNER, TIMING, initialState, reduce, view, type OverlayState } from "../src/content/overlay-state";
 import type { ServerMessage } from "../src/protocol";
 
 function apply(msgs: ServerMessage[], start: OverlayState = initialState, now = 1000): OverlayState {
@@ -69,28 +69,61 @@ describe("overlay reducer", () => {
   });
 });
 
-describe("view", () => {
-  test("shows the last started segment and the previous final", () => {
-    const s = apply([final(1, "一"), final(2, "二"), partial(3, "三", "")], initialState, 0);
-    expect(view(s, 35).current?.segId).toBe(3);
-    expect(view(s, 35).previous?.segId).toBe(2);
-  });
+describe("view: anime-style timing", () => {
+  // t0 = seg * 10, t1 = t0 + 2 (see final()); translation done as it arrives
+  const done = (seg: number, en: string): ServerMessage => ({ type: "translation", seg_id: seg, en, mt_ms: 1 });
+  const at = (msgs: ServerMessage[], mediaTime: number, start = initialState) =>
+    msgs.reduce((s, msg) => reduce(s, { type: "server", msg, now: 0, mediaTime }), start);
 
-  test("does not show a segment before its speech starts in the video", () => {
-    const s = apply([final(1, "一"), final(2, "二")], initialState, 0); // t0 = 10, 20
-    expect(view(s, 15).current?.segId).toBe(1);
-  });
-
-  test("expires 6 s of video after the end of speech", () => {
-    const s = apply([final(1, "一")], initialState, 0); // t0 10, t1 12
-    expect(view(s, 12 + EXPIRE_S - 0.1).current).not.toBeNull();
-    expect(view(s, 12 + EXPIRE_S + 0.1).current).toBeNull();
-  });
-
-  test("ahead mode: a line received early waits for its time", () => {
-    const s = apply([final(1, "一", 100)], initialState, 0); // t0 100
-    expect(view(s, 95).current).toBeNull();
+  test("appears when the speech starts, not before (ahead mode)", () => {
+    const s = at([final(1, "一", 100), done(1, "One")], 90);
+    expect(view(s, 99).current).toBeNull();
     expect(view(s, 100).current?.segId).toBe(1);
+  });
+
+  test("stays after the speech ends, then leaves", () => {
+    const s = at([final(1, "こんにちは"), done(1, "Hello")], 5); // t0 10, t1 12
+    expect(view(s, 12 + TIMING.lingerS - 0.05).current?.segId).toBe(1);
+    expect(view(s, 12 + TIMING.lingerS + 0.05).current).toBeNull();
+  });
+
+  test("a long translation keeps its reading time", () => {
+    const en = "x".repeat(90); // 6 s at 15 characters per second
+    const s = at([final(1, "はい"), done(1, en)], 5);
+    expect(view(s, 10 + 5.9).current?.segId).toBe(1);
+    expect(view(s, 10 + 6.1).current).toBeNull();
+  });
+
+  test("reading time starts when the text arrives (capture mode, late text)", () => {
+    const s = at([final(1, "はい"), done(1, "Yes")], 13); // speech 10–12, text at 13
+    expect(view(s, 13 + TIMING.minS - 0.05).current?.segId).toBe(1);
+  });
+
+  test("never cut off while the English is still streaming", () => {
+    const s = at([final(1, "はい"), { type: "translation_delta", seg_id: 1, en_delta: "Ye" }], 12);
+    expect(view(s, 60).current?.segId).toBe(1);
+  });
+
+  test("a short gap is bridged instead of blinking", () => {
+    // seg 1: 10–12, gone at 13; seg 2 starts at 14 (gap 1 s < bridge)
+    const s = at([final(1, "一"), done(1, "One"), final(2, "二", 14), done(2, "Two")], 5);
+    expect(view(s, 13.5).current?.segId).toBe(1);
+    expect(view(s, 14).current?.segId).toBe(2);
+  });
+
+  test("a long gap is left empty", () => {
+    const s = at([final(1, "一"), done(1, "One"), final(2, "二", 20), done(2, "Two")], 5);
+    expect(view(s, 16).current).toBeNull();
+  });
+
+  test("the next line starting early is stacked, not replacing", () => {
+    const en = "x".repeat(60); // 4 s of reading
+    const s = at([final(1, "一"), done(1, en), final(2, "二", 11), done(2, "Two")], 5);
+    const v = view(s, 11.5);
+    expect(v.current?.segId).toBe(2);
+    expect(v.previous?.segId).toBe(1);
+    expect(v.overlap).toBe(true);
+    expect(view(s, 14.5).overlap).toBe(false); // seg 1 read by then
   });
 
   test("seek back forgets the future (no ghost subtitles)", () => {

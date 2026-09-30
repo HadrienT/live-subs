@@ -20,8 +20,10 @@ const CSS = `
   background: rgba(8, 8, 8, var(--opacity, 0.6)); color: #fff; text-align: center;
   text-shadow: 0 0 2px #000, 0 0 4px #000;
 }
-.box:empty, .line:empty { display: none; }
-.prev { font-size: 0.72em; opacity: 0.75; }
+.line:empty { display: none; }
+.box { transition: opacity 0.18s ease-out; }
+.box.hidden { opacity: 0; transition: opacity 0.25s ease-in; pointer-events: none; }
+.prev { font-size: 0.72em; opacity: 0.75; pointer-events: none; cursor: default; }
 .ja .unstable { color: #b8b8b8; }
 .en { font-size: 0.92em; }
 .en.streaming { font-style: italic; color: #e6e6e6; }
@@ -63,8 +65,9 @@ export class Overlay {
     const style = document.createElement("style");
     style.textContent = CSS;
     this.wrap = el("div", "wrap");
-    this.prev = el("div", "box prev");
-    this.box = el("div", "box");
+    this.prev = el("div", "box prev hidden");
+    this.prev.style.whiteSpace = "pre-line";
+    this.box = el("div", "box hidden");
     this.ja = el("div", "line ja");
     this.en = el("div", "line en");
     this.banner = el("div", "line banner");
@@ -100,18 +103,27 @@ export class Overlay {
     const cur = v.current;
     const showJa = s.display !== "en";
     const showEn = s.display !== "ja";
+    const jaText = cur && showJa ? cur.jaStable + cur.jaUnstable : "";
+    const enText = cur && showEn ? cur.en : "";
+    const banner = showEn && v.banner && (!cur || !cur.en) ? v.banner : "";
+    // stacked while the previous line is still being read, or always with "two lines"
+    const prev = cur && (v.overlap || s.twoLines) ? v.previous : null;
+    const prevText = prev ? [showJa ? prev.jaStable : "", showEn ? prev.en : ""].filter(Boolean).join("\n") : "";
+
+    // Nothing to show: fade out with the last text still in place (no blank flash).
+    this.box.classList.toggle("hidden", !(jaText || enText || banner));
+    this.prev.classList.toggle("hidden", !prevText);
+    if (prevText) this.prev.textContent = prevText;
+    if (!(jaText || enText || banner)) return;
+
     this.ja.replaceChildren();
     if (cur && showJa) {
       this.ja.append(document.createTextNode(cur.jaStable));
       if (cur.jaUnstable) this.ja.append(el("span", "unstable", cur.jaUnstable));
     }
-    this.en.textContent = cur && showEn ? cur.en : "";
+    this.en.textContent = enText;
     this.en.classList.toggle("streaming", !!cur && !cur.enDone);
-    this.banner.textContent = showEn && v.banner && (!cur || !cur.en) ? v.banner : "";
-    const prev = s.twoLines ? v.previous : null;
-    this.prev.textContent = prev ? [showJa ? prev.jaStable : "", showEn ? prev.en : ""].filter(Boolean).join("\n") : "";
-    this.prev.style.whiteSpace = "pre-line";
-    this.box.style.display = this.ja.textContent || this.en.textContent || this.banner.textContent ? "" : "none";
+    this.banner.textContent = banner;
   }
 
   setHud(text: string): void {
