@@ -21,6 +21,7 @@ le vrai plus tard. `externe` = hors de ce dépôt.
 | 05 ASR en flux | 04 | douce | Le choix du modèle. Le lot 05 démarre avec `kotoba-whisper-v2.0`, l'interface `Transcriber` isole le changement |
 | 06 Traduction | 05 | douce | Messages `final` ; l'interface `Translator` se teste sur des segments figés |
 | 06 Traduction | *AgenticEnv* | **externe** | `llama-server` **sur GPU**, joignable (`127.0.0.1:8000` ou `172.17.0.1:8001`) |
+| 06 Traduction | *AgenticEnv* | **externe** (douce) | Profils `code` / `translate` et leur bascule ; en attendant, le lot 06 teste en chargeant le candidat à la main |
 | 07 Ext. capture | 02 | dure | La méthode de capture validée, la réponse sur AudioWorklet vs ScriptProcessor |
 | 07 Ext. capture | 01 | dure | `protocol.ts`, format des trames |
 | 08 Ext. overlay | 07 | dure | Le port content ↔ background, les messages reçus |

@@ -31,7 +31,7 @@ Trois qualités, dans cet ordre :
 
 | Constat | Où | Conséquence |
 |---|---|---|
-| `llama-server` (llama.cpp) sert `Qwen3-Coder-30B-A3B-Instruct` en Q4_K_M, ctx 65 536, réparti sur les deux V100 (`split_mode: layer`), API OpenAI-compatible sur `127.0.0.1:8000` | `~/AgenticEnv/configs/models.yaml`, `llama-server.service` | La traduction a un LLM **sans rien installer** ([ADR-003](decisions.md#adr-003--traduction-par-le-llama-server-dagenticenv)) |
+| `llama-server` (llama.cpp) sert `Qwen3-Coder-30B-A3B-Instruct` en Q4_K_M, ctx 65 536, réparti sur les deux V100 (`split_mode: layer`), API OpenAI-compatible sur `127.0.0.1:8000` | `~/AgenticEnv/configs/models.yaml`, `llama-server.service` | La traduction réutilise cette infra : AgenticEnv bascule entre un profil `code` et un profil `translate` (le meilleur traducteur, choisi au lot 06), un seul modèle chargé à la fois ([ADR-003](decisions.md#adr-003--traduction-par-le-llama-server-dagenticenv-avec-des-profils-de-modèle)) |
 | Socket `llama-bridge` sur `172.17.0.1:8001` pour joindre llama-server depuis un conteneur | `~/AgenticEnv/configs/llama-bridge.socket.j2` | Le serveur live-subs peut tourner en Docker ; quant-modeling fait déjà pareil |
 | ⚠️ **Au 30/09/2026, `llama-server` tourne sur CPU** : 32,7 Go de RAM, aucune VRAM prise sur les deux V100 alors que `n_gpu_layers: all` | `systemctl status llama-server`, `nvidia-smi` | **Bloquant pour la latence de traduction.** À corriger côté AgenticEnv (issue à ouvrir), voir [lot 06](wp/06-translation.md) |
 | Runtime Docker `nvidia` installé, driver 550, CUDA 12.4 disponible | `docker info` | Image serveur GPU sans bricolage |
@@ -119,7 +119,7 @@ graph TD
     WP12[12 · Qualité & E2E]
     WP13[13 · En avance *opt.*]
     WP14[14 · Historique *opt.*]
-    EXT{{AgenticEnv :<br/>llama-server sur GPU}}
+    EXT{{AgenticEnv :<br/>llama-server sur GPU<br/>+ profils code / translate}}
 
     WP00 --> WP01
     WP00 --> WP02

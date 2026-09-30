@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Dépend de** | [05](05-streaming-asr.md) (douce) ; **externe** : `llama-server` d'AgenticEnv sur GPU |
+| **Dépend de** | [05](05-streaming-asr.md) (douce) ; **externe** : `llama-server` d'AgenticEnv sur GPU, et les profils de modèle `code` / `translate` ([ADR-003](../decisions.md#adr-003--traduction-par-le-llama-server-dagenticenv-avec-des-profils-de-modèle)) |
 | **Bloque** | [10](10-server-deploy.md), [12](12-quality-e2e.md) |
 | **Branche** | `feat/translation` |
 
@@ -56,22 +56,39 @@ class Translator(Protocol):
 - On ne traduit **jamais** les `partial` en v1 (coût GPU × 5 pour un texte qui
   change). À reconsidérer au lot 09 si la latence le justifie.
 
-## 4. Banc de traduction
+## 4. Banc de traduction — il désigne le modèle du profil `translate`
+
+Le modèle servi pendant qu'on regarde un stream est **le meilleur traducteur**
+qui tient sur les V100, pas le modèle de code
+([ADR-003](../decisions.md#adr-003--traduction-par-le-llama-server-dagenticenv-avec-des-profils-de-modèle)).
+Ce banc le choisit.
 
 `benchmarks/mt/` : 200 segments `final` réels issus du lot 05, avec leur
-contexte. Comparer :
+contexte. Candidats (vérifier au démarrage que chacun existe en GGUF et se
+charge dans la version de llama.cpp installée) :
 
 | Modèle | Remarque |
 |---|---|
-| `Qwen3-Coder-30B-A3B-Instruct` (Q4_K_M) | Celui qui est servi aujourd'hui |
-| `Qwen3-30B-A3B-Instruct-2507` (Q4_K_M) | Même architecture, généraliste : candidat naturel |
-| `pfnet/plamo-2-translate` (GGUF) | Traducteur dédié JA↔EN |
+| `pfnet/plamo-2-translate` | Traducteur dédié JA↔EN (PFN). Architecture hybride : vérifier le support llama.cpp |
+| `Qwen3-30B-A3B-Instruct-2507` (Q4_K_M) | MoE ~3B actifs, très rapide, bon en japonais |
+| Gemma 3 27B (Q4_K_M) | Réputé solide en traduction, dense donc plus lent |
+| `Qwen3-Coder-30B-A3B-Instruct` | **Témoin** seulement : le modèle de code actuel |
 
-Mesures : latence du premier jeton et latence totale (p50/p95), et une
-évaluation de qualité **à l'aveugle** par le mainteneur sur 50 segments (A/B
-anonymisé, script dans `benchmarks/mt/`). Si un modèle l'emporte nettement,
-issue `cross-repo` sur AgenticEnv : changer le modèle servi, ou en servir un
-second, reste une décision d'AgenticEnv ([ADR-003](../decisions.md#adr-003--traduction-par-le-llama-server-dagenticenv)).
+Mesures : latence du premier jeton et latence totale (p50/p95) **sur GPU**,
+VRAM avec un contexte de 8k, et une évaluation de qualité **à l'aveugle** par
+le mainteneur sur 50 segments (A/B anonymisé, script dans `benchmarks/mt/`).
+Le gagnant est enregistré comme profil `translate` dans
+`~/AgenticEnv/configs/models.yaml`, par une PR sur AgenticEnv.
+
+## 5. Modèle inactif
+
+Le traducteur envoie `model: $LIVESUBS_LLM_MODEL`. Si `/v1/models` annonce un
+autre modèle (le profil `code` est chargé) et qu'AgenticEnv n'échange pas les
+modèles à la demande :
+`error{code:"mt_model_inactive", fatal:false}`, la ligne anglaise est
+remplacée par un bandeau « LLM en mode code — passer en mode traduction », et
+le popup propose la bascule si AgenticEnv l'expose. On ne traduit **jamais**
+avec le modèle de code sans le dire.
 
 ## Critères d'acceptation
 
@@ -80,4 +97,7 @@ second, reste une décision d'AgenticEnv ([ADR-003](../decisions.md#adr-003--tra
       traduction avec sa graphie imposée (test avec `FakeTranslator` + test
       `gpu` réel).
 - [ ] Retard, fusion et délai maximal couverts par des tests.
-- [ ] Résultats du banc versionnés dans `benchmarks/mt/results-<date>.md`.
+- [ ] Résultats du banc versionnés dans `benchmarks/mt/results-<date>.md`, et
+      profil `translate` enregistré dans AgenticEnv.
+- [ ] Avec le profil `code` chargé, le bandeau « mode code » s'affiche au lieu
+      d'une traduction.

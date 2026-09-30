@@ -67,35 +67,59 @@ int8_float16), sans dépendre de flash-attention.
 
 ---
 
-## ADR-003 — Traduction par le `llama-server` d'AgenticEnv
+## ADR-003 — Traduction par le `llama-server` d'AgenticEnv, avec des profils de modèle
 
 **Décision.** Le traducteur est un **client OpenAI-compatible** (`/v1/chat/completions`
-en flux) vers le `llama-server` déjà en service pour AgenticEnv. live-subs ne
-lance pas de deuxième LLM. Le modèle, le contexte et le placement GPU se
-décident dans `~/AgenticEnv/configs/models.yaml`, pas ici.
+en flux) vers le `llama-server` d'AgenticEnv. live-subs ne lance pas son propre
+LLM. Le serveur ne garde **qu'un modèle chargé à la fois**, mais on passe
+**facilement** de l'un à l'autre selon l'activité :
 
-**Pourquoi.** Le serveur a 32 Go de VRAM au total et llama-server en réserve
-déjà 20 Gio. Un deuxième LLM de 7–14B prendrait ce qui reste et entrerait en
-conflit avec l'ASR et le backend CUDA de quant-modeling. Qwen3-30B-A3B n'a que
-~3B paramètres actifs par jeton : il est rapide, et la famille Qwen3 est solide
-en japonais. `cont_batching` permet de partager l'instance avec l'agent de code.
+| Profil | Modèle | Pour |
+|---|---|---|
+| `code` | `Qwen3-Coder-30B-A3B-Instruct` (celui d'aujourd'hui) | Agent OpenHands, assistant de scripting de quant-modeling |
+| `translate` | **le meilleur traducteur JA → EN** qui tient dans le budget VRAM, choisi au banc du [lot 06](wp/06-translation.md) | live-subs |
+
+Les profils, le mécanisme de bascule et le registre des modèles vivent **dans
+AgenticEnv** (`configs/models.yaml`). live-subs demande un modèle par son nom
+(`LIVESUBS_LLM_MODEL`) et, si le modèle chargé n'est pas celui-là, le **dit**
+(`error{code:"mt_model_inactive"}`, bandeau dans le popup) et propose la
+bascule si AgenticEnv l'expose. Il ne traduit jamais en silence avec le modèle
+de code.
+
+**Pourquoi.**
+- Un modèle de code n'est pas un bon traducteur, et un traducteur n'est pas un
+  bon agent de code. Chaque activité veut le meilleur modèle pour elle.
+- 32 Go de VRAM au total, dont 20 Gio réservés au LLM : **deux** gros modèles
+  à la fois, plus l'ASR et le backend CUDA de quant-modeling, ne tiennent pas
+  sans rogner le contexte de l'agent de code.
+- On ne fait jamais les deux en même temps : on regarde un stream **ou** on
+  code. Une bascule qui prend 10 à 30 s (chargement du GGUF) est acceptable.
+
+**Mécanisme de bascule : à trancher dans AgenticEnv.** Pistes, par ordre de
+préférence :
+1. un proxy d'échange à la demande (`llama-swap`, ou le mode « router » de
+   llama.cpp s'il est disponible dans la version installée) : le modèle est
+   chargé d'après le champ `model` de la requête, un seul résident. Aucun
+   geste manuel, mais risque de « ping-pong » si les deux activités tournent
+   en même temps ;
+2. une commande explicite `just llm-use <profil>` (sudoers étroit, comme au
+   WP08f d'AgenticEnv), déclenchable aussi depuis le panneau Components
+   d'agenticenv-chat et depuis le popup de live-subs.
 
 **Conditions.**
 - **llama-server doit tourner sur GPU.** Au 30/09/2026, il tourne sur CPU
-  (voir [README §2](README.md#2-ce-qui-existe-déjà-sur-le-serveur)). À corriger
-  dans AgenticEnv avant le lot 06.
-- Un Qwen3-**Coder** n'est pas le meilleur choix pour traduire. Le banc de
-  traduction du [lot 06](wp/06-translation.md) le compare à
-  `Qwen3-30B-A3B-Instruct-2507` (même taille, même vitesse, généraliste) et à un
-  traducteur dédié (`plamo-2-translate`). Si l'écart est net, la décision
-  (changer le modèle servi, ou en servir deux) se prend **dans AgenticEnv**, par
-  une issue `cross-repo`.
-- Quand l'agent de code est en plein tour, la traduction attend son créneau.
-  On mesure ce retard (lot 09) avant d'envisager une instance dédiée.
+  (voir [README §2](README.md#2-ce-qui-existe-déjà-sur-le-serveur)).
+- Le choix du modèle `translate` sort du banc du lot 06. Candidats :
+  `plamo-2-translate` (traducteur dédié JA↔EN), `Qwen3-30B-A3B-Instruct-2507`,
+  Gemma 3 27B. Condition : servable par llama.cpp sur Volta, ≤ 20 Gio avec le
+  contexte nécessaire (8k suffisent pour traduire).
 
 **Écarté.**
+- *Traduire avec Qwen3-Coder* : c'était la proposition initiale, écartée par le
+  mainteneur. On veut le meilleur traducteur, pas un compromis.
+- *Deux instances permanentes* : la VRAM ne suffit pas sans rogner le contexte
+  de l'agent de code.
 - *vLLM* : ses versions récentes ne supportent plus Volta (CC 7.0).
-- *Ollama* : une couche de plus au-dessus de llama.cpp, qui est déjà là.
 - *NLLB / M2M100 / opus-mt ja-en* : rapides, mais phrase par phrase sans
   contexte : les pronoms omis du japonais et les noms propres des streams leur
   échappent.

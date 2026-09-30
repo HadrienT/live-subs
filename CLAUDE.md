@@ -34,9 +34,14 @@ serveur : ingest → VAD → ASR (GPU) → segment JA ──► LLM (llama-serve
   d'`~/AgenticEnv`** (llama.cpp, `configs/models.yaml` y est le registre des
   modèles). URL : `LIVESUBS_LLM_BASE_URL`, défaut `http://127.0.0.1:8000/v1`
   hors Docker, `http://172.17.0.1:8001/v1` depuis un conteneur (socket
-  `llama-bridge` d'AgenticEnv). Ce dépôt **ne pilote pas** llama-server : un
-  changement de modèle ou de contexte se fait dans AgenticEnv, par une issue
-  là-bas. Voir [ADR-003](blueprint/decisions.md).
+  `llama-bridge` d'AgenticEnv). Un seul modèle est chargé à la fois ;
+  AgenticEnv bascule entre des **profils** : `code` (Qwen3-Coder, agent de code)
+  et `translate` (le meilleur traducteur JA → EN, choisi au banc du lot 06).
+  live-subs demande son modèle par nom (`LIVESUBS_LLM_MODEL`) et signale le
+  profil `code` s'il est chargé, sans jamais traduire avec lui en silence. Ce
+  dépôt **ne pilote pas** llama-server : modèles, profils et mécanisme de
+  bascule se changent dans AgenticEnv, par une issue là-bas. Voir
+  [ADR-003](blueprint/decisions.md).
 
 ## GPU — ressource partagée
 
