@@ -1,0 +1,94 @@
+import { describe, expect, test } from "vitest";
+import { EXPIRE_MS, MODE_CODE_BANNER, initialState, reduce, view, type OverlayState } from "../src/content/overlay-state";
+import type { ServerMessage } from "../src/protocol";
+
+function apply(msgs: ServerMessage[], start: OverlayState = initialState, now = 1000): OverlayState {
+  return msgs.reduce((s, msg, i) => reduce(s, { type: "server", msg, now: now + i }), start);
+}
+
+const partial = (seg: number, stable: string, unstable: string, t0 = seg * 10): ServerMessage => ({
+  type: "partial", seg_id: seg, ja_stable: stable, ja_unstable: unstable, t0, t1: t0 + 1,
+});
+const final = (seg: number, ja: string, t0 = seg * 10): ServerMessage => ({
+  type: "final", seg_id: seg, ja, t0, t1: t0 + 2, asr_ms: 100,
+});
+
+describe("overlay reducer", () => {
+  test("partials are replaced by the final", () => {
+    const s = apply([partial(1, "きょう", "は"), partial(1, "きょうは", "いい"), final(1, "今日はいい天気")]);
+    expect(s.lines).toHaveLength(1);
+    expect(s.lines[0]).toMatchObject({ jaStable: "今日はいい天気", jaUnstable: "", final: true });
+  });
+
+  test("a late partial never overwrites the final", () => {
+    const s = apply([final(1, "確定"), partial(1, "古い", "")]);
+    expect(s.lines[0]?.jaStable).toBe("確定");
+  });
+
+  test("an empty final retracts the partials (hallucination dropped)", () => {
+    const s = apply([partial(1, "ごめん", ""), final(1, "")]);
+    expect(s.lines).toHaveLength(0);
+  });
+
+  test("translation deltas accumulate, then the translation closes the line", () => {
+    const s = apply([
+      final(1, "こんにちは"),
+      { type: "translation_delta", seg_id: 1, en_delta: "Hel" },
+      { type: "translation_delta", seg_id: 1, en_delta: "lo" },
+    ]);
+    expect(s.lines[0]).toMatchObject({ en: "Hello", enDone: false });
+    const done = apply([{ type: "translation", seg_id: 1, en: "Hello!", mt_ms: 300, merged: [] }], s);
+    expect(done.lines[0]).toMatchObject({ en: "Hello!", enDone: true });
+  });
+
+  test("merged segments are closed without their own English", () => {
+    const s = apply([
+      final(1, "いち"),
+      final(2, "に"),
+      { type: "translation", seg_id: 2, en: "one two", mt_ms: 900, merged: [1] },
+    ]);
+    expect(s.lines.map((l) => [l.segId, l.en, l.enDone])).toEqual([[1, "", true], [2, "one two", true]]);
+  });
+
+  test("model inactive shows the banner, a translation clears it", () => {
+    const s = apply([final(1, "はい"), { type: "error", code: "mt_model_inactive", message: "x", fatal: false, seg_id: 1 }]);
+    expect(s.banner).toBe(MODE_CODE_BANNER);
+    expect(s.lines[0]).toMatchObject({ enDone: true, enFailed: true });
+    expect(apply([final(2, "え"), { type: "translation", seg_id: 2, en: "Eh", mt_ms: 1 }], s).banner).toBeNull();
+  });
+
+  test("timeout leaves the English line empty", () => {
+    const s = apply([final(3, "はい"), { type: "error", code: "mt_timeout", message: "x", fatal: false, seg_id: 3 }]);
+    expect(s.lines[0]).toMatchObject({ en: "", enDone: true, enFailed: true });
+  });
+
+  test("keeps only a few lines", () => {
+    const s = apply([1, 2, 3, 4, 5, 6].map((i) => final(i, `s${i}`)));
+    expect(s.lines.map((l) => l.segId)).toEqual([3, 4, 5, 6]);
+  });
+});
+
+describe("view", () => {
+  test("shows the last started segment and the previous final", () => {
+    const s = apply([final(1, "一"), final(2, "二"), partial(3, "三", "")], initialState, 0);
+    expect(view(s, 35, 10).current?.segId).toBe(3);
+    expect(view(s, 35, 10).previous?.segId).toBe(2);
+  });
+
+  test("does not show a segment before its speech starts in the video", () => {
+    const s = apply([final(1, "一"), final(2, "二")], initialState, 0); // t0 = 10, 20
+    expect(view(s, 15, 10).current?.segId).toBe(1);
+  });
+
+  test("expires after 6 s without news", () => {
+    const s = apply([final(1, "一")], initialState, 0);
+    expect(view(s, 100, EXPIRE_MS - 1).current).not.toBeNull();
+    expect(view(s, 100, EXPIRE_MS + 10).current).toBeNull();
+  });
+
+  test("seek back forgets the future (no ghost subtitles)", () => {
+    const s = apply([final(1, "一"), final(2, "二"), final(3, "三")], initialState, 0); // t0 10, 20, 30
+    const after = reduce(s, { type: "seek", mediaTime: 12 });
+    expect(after.lines.map((l) => l.segId)).toEqual([1]);
+  });
+});
