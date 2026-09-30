@@ -191,6 +191,19 @@ est négligeable.
 - *WebSocket depuis le content script* : à retester au lot 02, mais on ne bâtit
   pas dessus.
 
+**Note (lot 11, 30/09/2026) — CSP des pages d'extension.** En Manifest V3, la
+CSP par défaut de Firefox pour les pages d'extension, background compris, est
+`script-src 'self'; upgrade-insecure-requests;`. Cette dernière directive
+réécrirait `ws://192.168.1.200:8765` en `wss://`, qui n'existe pas sur le LAN.
+Le manifeste déclare donc explicitement
+`"extension_pages": "script-src 'self'; object-src 'self'"`. À confirmer
+au lot 02 (Q6) : la connexion depuis le background doit s'ouvrir avec cette
+CSP, et échouer si on la retire.
+
+**Note — mises à jour.** Firefox ne suit un `update_url` qu'en HTTPS : le
+serveur du LAN, en HTTP, ne peut pas servir les mises à jour automatiques de
+l'extension. On réinstalle le `.xpi` signé à chaque version (README).
+
 ---
 
 ## ADR-005 — Serveur : un seul processus Python asyncio, GPU derrière des interfaces

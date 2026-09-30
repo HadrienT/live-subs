@@ -19,6 +19,7 @@ const options = {
   format: "iife",
   target: "firefox142",
   sourcemap: watch ? "inline" : false,
+  minify: process.argv.includes("--production"),
   logLevel: "info",
 };
 
