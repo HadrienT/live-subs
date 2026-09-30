@@ -63,7 +63,9 @@ ext-build:
 ext-sign:
     @test -n "${WEB_EXT_API_KEY:-}" -a -n "${WEB_EXT_API_SECRET:-}" || { echo "WEB_EXT_API_KEY / WEB_EXT_API_SECRET missing in .env"; exit 1; }
     cd {{ext}} && rm -rf dist && node esbuild.mjs --production && npx web-ext lint --source-dir dist
-    cd {{ext}} && npx web-ext sign --channel=unlisted --source-dir dist --artifacts-dir dist-signed --api-key "$WEB_EXT_API_KEY" --api-secret "$WEB_EXT_API_SECRET"
+    # dist/ is bundled and minified: AMO requires the readable source (committed HEAD)
+    mkdir -p {{ext}}/dist-signed && git archive --format=zip -o {{ext}}/dist-signed/source.zip HEAD extension
+    cd {{ext}} && npx web-ext sign --channel=unlisted --source-dir dist --artifacts-dir dist-signed --upload-source-code dist-signed/source.zip --api-key "$WEB_EXT_API_KEY" --api-secret "$WEB_EXT_API_SECRET"
     @ls -1 {{ext}}/dist-signed/*.xpi
 
 # Disposable Firefox with the extension loaded
