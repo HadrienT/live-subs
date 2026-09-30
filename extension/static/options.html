@@ -21,6 +21,9 @@
   <label>Deux dernières phrases <input type="checkbox" name="twoLines"></label>
   <label>HUD de latence au démarrage <input type="checkbox" name="hud"></label>
   <label>Sessions gardées (historique) <input type="number" name="historySessions" min="1" max="200"></label>
+  <label>Mode « en avance » <input type="checkbox" name="aheadMode"></label>
+  <p class="hint">Le serveur tire lui-même le direct ; la vidéo est gardée quelques secondes derrière pour que les sous-titres arrivent avant la phrase. Repli automatique sur la capture si l'alignement échoue.</p>
+  <label>Retard sur le direct (s) <input type="number" name="aheadDelayS" min="2" max="30" step="0.5"></label>
   <label>Méthode de capture
     <select name="captureMethod">
       <option value="auto">auto</option>

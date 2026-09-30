@@ -1,5 +1,5 @@
 {
-  "protocol_version": 1,
+  "protocol_version": 2,
   "sample_rate": 16000,
   "frame": {
     "header_size": 20,
@@ -48,6 +48,11 @@
         },
         "targets": {
           "type": "array",
+          "required": false,
+          "nullable": false
+        },
+        "mode": {
+          "type": "string",
           "required": false,
           "nullable": false
         }
@@ -293,6 +298,31 @@
           "type": "number",
           "required": true,
           "nullable": false
+        }
+      }
+    },
+    "ahead_status": {
+      "direction": "s2c",
+      "fields": {
+        "state": {
+          "type": "string",
+          "required": true,
+          "nullable": false
+        },
+        "offset_s": {
+          "type": "number",
+          "required": false,
+          "nullable": true
+        },
+        "lead_s": {
+          "type": "number",
+          "required": false,
+          "nullable": true
+        },
+        "message": {
+          "type": "string",
+          "required": false,
+          "nullable": true
         }
       }
     }

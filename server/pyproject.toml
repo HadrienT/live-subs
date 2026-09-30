@@ -22,6 +22,9 @@ gpu = [
     "nvidia-cudnn-cu12>=9,<10",
     "nvidia-ml-py>=13.615.71",
 ]
+ahead = [
+    "yt-dlp>=2026.8.19",
+]
 
 [project.scripts]
 livesubs = "livesubs.__main__:main"

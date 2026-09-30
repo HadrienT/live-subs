@@ -38,7 +38,9 @@ async function refresh(): Promise<void> {
     ? "Ouvrez un stream YouTube (watch ou live)."
     : state?.protocolMismatch
       ? "Le serveur parle une autre version du protocole : mettez l'extension à jour."
-      : state?.mtInactive
+      : state?.ahead?.state === "failed"
+        ? `Mode en avance indisponible (${state.ahead.message ?? "?"}) : retour à la capture.`
+        : state?.mtInactive
         ? "LLM en mode code — passer AgenticEnv en mode traduction (profil translate)."
         : conn === "error"
           ? `Erreur : ${state?.detail ?? "serveur injoignable"}`
@@ -51,7 +53,14 @@ async function refresh(): Promise<void> {
   $("ja95").textContent = sec(lat?.ja.p95 ?? state?.stats?.ja_ms_p95);
   $("en50").textContent = sec(lat?.en.p50 ?? state?.stats?.en_ms_p50);
   $("en95").textContent = sec(lat?.en.p95 ?? state?.stats?.en_ms_p95);
-  $("models").textContent = state?.asrModel ? `ASR ${state.asrModel} · MT ${state.mtModel ?? "aucun"}` : "";
+  const ahead = state?.ahead;
+  const aheadText =
+    ahead?.state === "aligned"
+      ? ` · en avance de ${ahead.lead_s?.toFixed(1) ?? "?"} s`
+      : ahead?.state === "aligning"
+        ? " · alignement…"
+        : "";
+  $("models").textContent = state?.asrModel ? `ASR ${state.asrModel} · MT ${state.mtModel ?? "aucun"}${aheadText}` : "";
   $("queue").textContent = state?.stats
     ? `File GPU ${state.stats.queue_depth}${state.stats.gpu_busy ? " · GPU occupé" : ""}`
     : "";

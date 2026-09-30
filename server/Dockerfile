@@ -9,8 +9,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
     UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1
 
+# ffmpeg: ahead-of-live mode (WP13) pulls the live with yt-dlp and decodes it.
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates \
+ && apt-get install -y --no-install-recommends ca-certificates ffmpeg \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=ghcr.io/astral-sh/uv:0.12.9 /uv /usr/local/bin/uv
 
@@ -21,10 +22,10 @@ WORKDIR /app
 COPY pyproject.toml uv.lock README.md ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv python install 3.13 \
- && uv sync --frozen --no-dev --extra gpu --no-install-project
+ && uv sync --frozen --no-dev --extra gpu --extra ahead --no-install-project
 COPY src ./src
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev --extra gpu
+    uv sync --frozen --no-dev --extra gpu --extra ahead
 
 RUN useradd --uid 10001 --create-home livesubs \
  && mkdir -p /models /glossaries && chown livesubs /models

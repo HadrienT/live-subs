@@ -92,6 +92,10 @@ loaded (temporary add-on, gone at restart).
   above the live chat; click a line to jump there.
 - Options (server URL, token, size, opacity, previous sentence, capture
   fallbacks): popup → *Options*.
+- **Ahead mode** (options → *Mode « en avance »*): the server pulls the live
+  itself and the player is kept ~6 s behind the live edge, so subtitles appear
+  *with* the sentence instead of after it. Falls back to normal capture by
+  itself if the live cannot be pulled or aligned (ADR-009).
 
 Glossaries per channel (names, fan names, game terms, with their English
 spelling): [`glossaries/`](glossaries/README.md).

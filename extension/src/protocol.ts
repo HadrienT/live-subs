@@ -5,7 +5,7 @@
 // compares SCHEMA below with server/src/livesubs/protocol.schema.json, and tsc
 // checks that SCHEMA and the interfaces agree.
 
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2;
 export const SAMPLE_RATE = 16_000;
 export const FRAME_SAMPLES = 1_600; // nominal frame: 100 ms
 
@@ -56,6 +56,9 @@ export function decodeFrame(buf: ArrayBuffer): AudioFrame {
 // ------------------------------------------------------------------ messages
 
 export type Lang = "ja" | "en";
+// capture: transcribe what the extension captures. ahead: the server pulls the live (WP13).
+export type Mode = "capture" | "ahead";
+export type AheadState = "aligning" | "aligned" | "failed";
 
 export const ERROR_CODES = [
   "protocol_mismatch",
@@ -79,6 +82,7 @@ export interface Hello {
   channel_id?: string | null;
   title?: string | null;
   targets?: Lang[];
+  mode?: Mode;
 }
 export interface Pause {
   type: "pause";
@@ -155,6 +159,13 @@ export interface Pong {
   type: "pong";
   ts: number;
 }
+export interface AheadStatus {
+  type: "ahead_status";
+  state: AheadState;
+  offset_s?: number | null; // stream time − video time
+  lead_s?: number | null; // how far ahead of the player the server hears the live
+  message?: string | null;
+}
 
 export type ClientMessage = Hello | Pause | Resume | Config | Ping;
 export type ServerMessage =
@@ -165,7 +176,8 @@ export type ServerMessage =
   | Translation
   | Stats
   | ErrorMsg
-  | Pong;
+  | Pong
+  | AheadStatus;
 export type Message = ClientMessage | ServerMessage;
 export type MessageType = Message["type"];
 type MessageOf<T extends MessageType> = Extract<Message, { type: T }>;
@@ -200,6 +212,7 @@ export const SCHEMA: { [T in MessageType]: MessageSpec<MessageOf<T>> } = {
       channel_id: optNull("string"),
       title: optNull("string"),
       targets: opt("array"),
+      mode: opt("string"),
     },
   },
   pause: { direction: "c2s", fields: {} },
@@ -275,6 +288,15 @@ export const SCHEMA: { [T in MessageType]: MessageSpec<MessageOf<T>> } = {
     },
   },
   pong: { direction: "s2c", fields: { ts: req("number") } },
+  ahead_status: {
+    direction: "s2c",
+    fields: {
+      state: req("string"),
+      offset_s: optNull("number"),
+      lead_s: optNull("number"),
+      message: optNull("string"),
+    },
+  },
 };
 
 function matchesKind(value: unknown, kind: FieldKind): boolean {

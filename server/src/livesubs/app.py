@@ -14,6 +14,8 @@ from pydantic import ValidationError
 
 from livesubs import __version__
 from livesubs import protocol as p
+from livesubs.ahead.controller import INNER_FIRST_SEG_ID, AheadController
+from livesubs.ahead.source import PcmSource, SourceError, YtDlpSource
 from livesubs.asr.base import Transcriber
 from livesubs.asr.fake import FakeTranscriber
 from livesubs.asr.scheduler import GpuScheduler
@@ -45,6 +47,7 @@ class Services:
     glossaries: GlossaryStore = field(default_factory=lambda: GlossaryStore(None))
     scheduler: GpuScheduler | None = None
     sessions: dict[str, Session] = field(default_factory=dict)
+    make_source: Callable[[str], PcmSource] = YtDlpSource  # ahead mode, from a video id
 
     @property
     def warm(self) -> bool:
@@ -230,6 +233,7 @@ async def _serve_session(ws: WebSocket, services: Services) -> None:
 
     sender_task = asyncio.create_task(sender())
     stats_task = asyncio.create_task(stats_loop())
+    ahead = start_ahead(first, session, services) if first.mode == "ahead" else None
     try:
         while True:
             message = await ws.receive()
@@ -261,6 +265,8 @@ async def _serve_session(ws: WebSocket, services: Services) -> None:
                         )
     finally:
         stats_task.cancel()
+        if ahead is not None:
+            await ahead.aclose()
         services.sessions.pop(session.id, None)
         await session.close()
         outbox.put_nowait(None)
@@ -268,6 +274,47 @@ async def _serve_session(ws: WebSocket, services: Services) -> None:
             await asyncio.wait_for(sender_task, 2.0)
         sender_task.cancel()
         log.info("session %s closed", session.id)
+
+
+def start_ahead(hello: p.Hello, outer: Session, services: Services) -> AheadController | None:
+    """Ahead-of-live mode (WP13), or ``ahead_status{failed}`` and plain capture."""
+    settings = services.settings
+    reason = None
+    if not settings.ahead_enabled:
+        reason = "ahead mode is disabled on this server"
+    elif services.scheduler is None:
+        reason = "ahead mode needs the ASR pipeline"
+    if reason is None:
+        try:
+            source = services.make_source(hello.video_id)
+        except SourceError as e:
+            reason = str(e)
+    if reason is not None:
+        outer.emit(p.AheadStatus(state="failed", message=reason))
+        return None
+    inner_hello = hello.model_copy(update={"mode": "capture"})
+
+    def make_inner(emit: Callable[[p.ServerMessage], None]) -> Session:
+        return Session(
+            inner_hello,
+            vad=services.make_vad(),
+            vad_params=settings.vad_params(),
+            sink=services.make_sink(inner_hello),
+            emit=emit,
+            ring_seconds=settings.ring_seconds,
+            first_seg_id=INNER_FIRST_SEG_ID,
+        )
+
+    controller = AheadController(
+        outer,
+        make_inner,
+        source,
+        capture_window_s=settings.ahead_capture_window_s,
+        max_lag_s=settings.ahead_max_lag_s,
+        fail_after_s=settings.ahead_fail_after_s,
+    )
+    controller.start()
+    return controller
 
 
 def create_app(settings: Settings | None = None, services: Services | None = None) -> FastAPI:

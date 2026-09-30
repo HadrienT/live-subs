@@ -1,5 +1,5 @@
 // Messages between extension contexts (not the wire protocol: see protocol.ts).
-import type { ClientMessage, Hello, ServerMessage, Stats } from "../protocol";
+import type { AheadStatus, ClientMessage, Hello, ServerMessage, Stats } from "../protocol";
 
 export const PORT_NAME = "live-subs-capture";
 
@@ -39,6 +39,7 @@ export interface TabState {
   stats: Stats | null;
   latency: { ja: LatencySummary; en: LatencySummary } | null;
   protocolMismatch: boolean;
+  ahead: AheadStatus | null;
 }
 
 /** popup / commands → background (runtime.sendMessage). */

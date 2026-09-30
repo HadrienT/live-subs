@@ -20,7 +20,7 @@ import numpy as np
 from numpy.typing import NDArray
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 
-PROTOCOL_VERSION = 1
+PROTOCOL_VERSION = 2
 SAMPLE_RATE = 16_000
 FRAME_SAMPLES = 1_600  # nominal frame: 100 ms
 
@@ -69,6 +69,10 @@ def decode_frame(data: bytes) -> AudioFrame:
 # --------------------------------------------------------------------------- messages
 
 Lang = Literal["ja", "en"]
+# capture: transcribe what the extension captures (ADR-001).
+# ahead: the server pulls the live itself and aligns it on the capture (WP13).
+Mode = Literal["capture", "ahead"]
+AheadState = Literal["aligning", "aligned", "failed"]
 
 
 DEFAULT_TARGETS: tuple[Lang, ...] = ("ja", "en")
@@ -89,6 +93,7 @@ class Hello(_Message):
     channel_id: str | None = None
     title: str | None = None
     targets: list[Lang] = Field(default_factory=lambda: list(DEFAULT_TARGETS))
+    mode: Mode = "capture"
 
 
 class Pause(_Message):
@@ -203,9 +208,21 @@ class Pong(_Message):
     ts: float
 
 
+class AheadStatus(_Message):
+    """Ahead-of-live mode (WP13). ``offset_s``: stream time − video time.
+    ``lead_s``: how far ahead of the player the server hears the live.
+    ``failed``: the server fell back to transcribing the capture."""
+
+    type: Literal["ahead_status"] = "ahead_status"
+    state: AheadState
+    offset_s: float | None = None
+    lead_s: float | None = None
+    message: str | None = None
+
+
 ClientMessage = Annotated[Hello | Pause | Resume | Config | Ping, Field(discriminator="type")]
 ServerMessage = Annotated[
-    Ready | Partial | Final | TranslationDelta | Translation | Stats | Error | Pong,
+    Ready | Partial | Final | TranslationDelta | Translation | Stats | Error | Pong | AheadStatus,
     Field(discriminator="type"),
 ]
 
@@ -222,6 +239,7 @@ SERVER_MESSAGES: tuple[type[_Message], ...] = (
     Stats,
     Error,
     Pong,
+    AheadStatus,
 )
 
 

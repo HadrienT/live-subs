@@ -19,6 +19,8 @@ export interface Settings {
   workletMode: WorkletMode;
   hud: boolean; // latency HUD (Alt+L)
   historySessions: number; // sessions kept for the transcript panel / export
+  aheadMode: boolean; // WP13: the server pulls the live, the player stays behind it
+  aheadDelayS: number; // how far behind the live edge the player is kept
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -35,6 +37,8 @@ export const DEFAULT_SETTINGS: Settings = {
   workletMode: "auto",
   hud: false,
   historySessions: 20,
+  aheadMode: false,
+  aheadDelayS: 6,
 };
 
 export function withDefaults(stored: Partial<Settings> | undefined): Settings {

@@ -60,8 +60,15 @@ async function start(): Promise<void> {
     });
     send({
       kind: "start",
-      hello: { video_id: info.videoId, channel_id: info.channelId, title: info.title, targets: targets(settings) },
+      hello: {
+        video_id: info.videoId,
+        channel_id: info.channelId,
+        title: info.title,
+        targets: targets(settings),
+        mode: settings.aheadMode ? "ahead" : "capture",
+      },
     });
+    if (settings.aheadMode) keepBehindLive(video, settings.aheadDelayS);
     tracker = new LatencyTracker();
     transcript = new Transcript({ videoId: info.videoId, title: info.title, startedAt: Date.now(), entries: [] });
     panel.setTranscript(transcript);
@@ -75,6 +82,17 @@ async function start(): Promise<void> {
   } finally {
     starting = false;
   }
+}
+
+/**
+ * Ahead mode (WP13): the server hears the live edge; the player stays `delay` s
+ * behind it (YouTube's DVR), so subtitles are ready before their sentence.
+ */
+function keepBehindLive(video: HTMLVideoElement, delay: number): void {
+  const n = video.seekable.length;
+  if (!n) return;
+  const edge = video.seekable.end(n - 1);
+  if (edge - video.currentTime < delay) video.currentTime = Math.max(0, edge - delay);
 }
 
 async function startCapture(video: HTMLVideoElement, sampleIdx: number): Promise<void> {
@@ -212,6 +230,9 @@ function onServer(msg: ServerMessage): void {
     case "stats":
       stats = msg;
       break;
+    case "ahead_status":
+      if (msg.state === "failed") state = initialState; // the capture takes over, new seg ids
+      break;
     default:
       break;
   }
@@ -226,7 +247,7 @@ function fmt(ms: number | null | undefined): string {
 function tick(): void {
   const v = capture?.video ?? findVideo();
   const now = performance.now();
-  if (capture && v) overlay.render(view(state, v.currentTime, now), controlsVisible());
+  if (capture && v) overlay.render(view(state, v.currentTime), controlsVisible());
   else overlay.render({ current: null, previous: null, banner: null }, false);
   if (hudOn) {
     const l = tracker.summary(now);

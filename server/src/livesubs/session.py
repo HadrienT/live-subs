@@ -55,6 +55,7 @@ class Session:
         sink: SegmentSink,
         emit: Emit,
         ring_seconds: float = 30.0,
+        first_seg_id: int = 1,
     ) -> None:
         self.id = uuid.uuid4().hex[:12]
         self.hello = hello
@@ -63,7 +64,9 @@ class Session:
         self.show_partials = True
         self.ingest = Ingest(ring_seconds)
         self._vad = vad
-        self._segmenter = Segmenter(vad_params)
+        self._segmenter = Segmenter(vad_params, first_seg_id=first_seg_id)
+        # Ahead mode (WP13): a hook that takes the captured frames for itself.
+        self.frame_hook: Callable[[p.AudioFrame], bool] | None = None
         self._sink = sink
         self._vad_cursor: int | None = None
         self._params = vad_params
@@ -87,6 +90,8 @@ class Session:
         return self.ingest.times.arrival(seg.end_idx - 1)
 
     def on_frame(self, frame: p.AudioFrame) -> None:
+        if self.frame_hook is not None and self.frame_hook(frame):
+            return
         if self.paused:
             return
         expected = self.ingest.expected_idx

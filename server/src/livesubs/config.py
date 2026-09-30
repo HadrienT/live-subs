@@ -63,6 +63,11 @@ class Settings(BaseSettings):
     mt_timeout_s: float = 8.0
     mt_merge_after: int = 3
     mt_history: int = 6
+    # --- Ahead-of-live mode (WP13): the server pulls the live with yt-dlp + ffmpeg
+    ahead_enabled: bool = True
+    ahead_capture_window_s: float = 15.0  # captured audio used to align the timelines
+    ahead_max_lag_s: float = 120.0  # how far ahead of the player the pulled live may be
+    ahead_fail_after_s: float = 45.0  # then fall back to transcribing the capture
     glossary_dir: Path | None = Path(__file__).resolve().parents[3] / "glossaries"
 
     def vad_params(self) -> VadParams:

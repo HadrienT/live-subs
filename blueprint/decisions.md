@@ -303,3 +303,43 @@ Aucun faux segment sur la musique dans aucune variante. Le seuil reste à 0,5.
 À revérifier sur de vrais streams (bruits de jeu, musique chantée), où une
 remise à zéro trop fréquente pourrait ouvrir des segments sur du bruit : le
 filtre d'hallucinations reste la seconde barrière.
+
+---
+
+## ADR-009 — Mode « en avance » : le serveur tire le direct, alignement par enveloppes (lot 13)
+
+**Décision.** Avec `hello.mode = "ahead"`, le serveur tire lui-même le direct
+(`yt-dlp` au bord du direct → `ffmpeg` → PCM 16 kHz) et y fait tourner la
+chaîne habituelle (session « interne », mêmes VAD / ASR / MT). L'audio capté
+par l'extension ne sert plus qu'à **aligner** les deux lectures :
+corrélation croisée normalisée des enveloppes log-RMS à 100 Hz sur 15 s de
+capture. Les `partial` / `final` de la session interne sont re-datés en temps
+de la vidéo (`t − offset`) ; l'extension garde le lecteur `aheadDelayS` (6 s)
+derrière le direct, et l'overlay affiche chaque ligne à son `t0`. Le serveur
+n'accepte qu'un **identifiant de vidéo** YouTube validé, jamais une URL du
+client. Protocole v2 : `hello.mode`, message `ahead_status`
+(`aligning` / `aligned` / `failed`, `offset_s`, `lead_s`).
+
+**Repli.** Source impossible (yt-dlp / ffmpeg absents, direct terminé) ou pas
+d'alignement en 45 s → `ahead_status{failed}` et la session transcrit la
+capture comme en mode normal, sans reconnexion.
+
+**Validé le 30/09/2026.**
+- Aligneur : décalage retrouvé à 10 ms près sur de la parole (Common Voice) et
+  sur l'audio d'un vrai direct (WeatherNews), capture dégradée (aller-retour
+  48 kHz, −6 dB, bruit). Sur une musique très rythmée (128 bpm), le pic est
+  juste mais peu marqué : l'aligneur **refuse de conclure** (netteté < 1,25) et
+  réessaie, plutôt que de donner un faux décalage.
+- Source réelle, dans l'image Docker : premier audio 6,5 s après le lancement,
+  puis débit temps réel. Deux pièges corrigés : yt-dlp a lui-même besoin de
+  ffmpeg pour les directs (HLS) et de son chemin absolu.
+- Bout en bout (serveur + faux ASR, source simulée, lecteur 5 s derrière) :
+  aligné à < 50 ms, `lead_s` ≈ 5 s, `final` reçus avant que le lecteur n'y
+  arrive ; replis testés.
+
+**Pas encore validé.** Une session réelle depuis Firefox. Et la transcription
+de parole tirée d'un vrai direct : au moment du test (minuit à Tokyo), le
+direct diffusait de la musique. yt-dlp signale aussi qu'il n'a pas de runtime
+JS (deno) : les directs essayés ont fourni leur format audio sans, mais
+YouTube peut changer ça. Les directs réservés aux membres restent hors
+périmètre (cookies).

@@ -25,8 +25,10 @@ export type Action =
   | { type: "seek"; mediaTime: number }
   | { type: "reset" };
 
-export const EXPIRE_MS = 6000;
-export const KEEP_LINES = 4;
+// A line disappears 6 s of video after its speech ended (t1), without a newer one.
+export const EXPIRE_S = 6;
+// Ahead mode (WP13) receives sentences before the player reaches them: keep enough.
+export const KEEP_LINES = 40;
 export const MODE_CODE_BANNER = "LLM en mode code — passer en mode traduction";
 
 export const initialState: OverlayState = { lines: [], banner: null, lastActivity: 0 };
@@ -127,12 +129,13 @@ export interface View {
 
 /**
  * What to show at `mediaTime`: only segments whose speech has started in the
- * video (t0 ≤ mediaTime), nothing after EXPIRE_MS without news.
+ * video (t0 ≤ mediaTime), and nothing EXPIRE_S of video after the last one ended.
+ * Video time, not wall time: in ahead mode (WP13) lines arrive before they play.
  */
-export function view(state: OverlayState, mediaTime: number, now: number): View {
-  if (now - state.lastActivity > EXPIRE_MS) return { current: null, previous: null, banner: state.banner };
+export function view(state: OverlayState, mediaTime: number): View {
   const started = state.lines.filter((l) => l.t0 <= mediaTime + 0.25);
-  const current = started.at(-1) ?? null;
+  const last = started.at(-1) ?? null;
+  const current = last && (!last.final || mediaTime - last.t1 <= EXPIRE_S) ? last : null;
   const previous = started.length > 1 ? (started.at(-2) ?? null) : null;
-  return { current, previous: previous?.final ? previous : null, banner: state.banner };
+  return { current, previous: current && previous?.final ? previous : null, banner: state.banner };
 }

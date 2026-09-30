@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { EXPIRE_MS, MODE_CODE_BANNER, initialState, reduce, view, type OverlayState } from "../src/content/overlay-state";
+import { EXPIRE_S, MODE_CODE_BANNER, initialState, reduce, view, type OverlayState } from "../src/content/overlay-state";
 import type { ServerMessage } from "../src/protocol";
 
 function apply(msgs: ServerMessage[], start: OverlayState = initialState, now = 1000): OverlayState {
@@ -62,28 +62,35 @@ describe("overlay reducer", () => {
     expect(s.lines[0]).toMatchObject({ en: "", enDone: true, enFailed: true });
   });
 
-  test("keeps only a few lines", () => {
-    const s = apply([1, 2, 3, 4, 5, 6].map((i) => final(i, `s${i}`)));
-    expect(s.lines.map((l) => l.segId)).toEqual([3, 4, 5, 6]);
+  test("keeps a bounded number of lines", () => {
+    const s = apply(Array.from({ length: 50 }, (_, i) => final(i + 1, `s${i}`)));
+    expect(s.lines).toHaveLength(40);
+    expect(s.lines[0]?.segId).toBe(11);
   });
 });
 
 describe("view", () => {
   test("shows the last started segment and the previous final", () => {
     const s = apply([final(1, "一"), final(2, "二"), partial(3, "三", "")], initialState, 0);
-    expect(view(s, 35, 10).current?.segId).toBe(3);
-    expect(view(s, 35, 10).previous?.segId).toBe(2);
+    expect(view(s, 35).current?.segId).toBe(3);
+    expect(view(s, 35).previous?.segId).toBe(2);
   });
 
   test("does not show a segment before its speech starts in the video", () => {
     const s = apply([final(1, "一"), final(2, "二")], initialState, 0); // t0 = 10, 20
-    expect(view(s, 15, 10).current?.segId).toBe(1);
+    expect(view(s, 15).current?.segId).toBe(1);
   });
 
-  test("expires after 6 s without news", () => {
-    const s = apply([final(1, "一")], initialState, 0);
-    expect(view(s, 100, EXPIRE_MS - 1).current).not.toBeNull();
-    expect(view(s, 100, EXPIRE_MS + 10).current).toBeNull();
+  test("expires 6 s of video after the end of speech", () => {
+    const s = apply([final(1, "一")], initialState, 0); // t0 10, t1 12
+    expect(view(s, 12 + EXPIRE_S - 0.1).current).not.toBeNull();
+    expect(view(s, 12 + EXPIRE_S + 0.1).current).toBeNull();
+  });
+
+  test("ahead mode: a line received early waits for its time", () => {
+    const s = apply([final(1, "一", 100)], initialState, 0); // t0 100
+    expect(view(s, 95).current).toBeNull();
+    expect(view(s, 100).current?.segId).toBe(1);
   });
 
   test("seek back forgets the future (no ghost subtitles)", () => {

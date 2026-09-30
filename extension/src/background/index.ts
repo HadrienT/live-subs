@@ -27,6 +27,7 @@ function emptyState(tabId: number): TabState {
     stats: null,
     latency: null,
     protocolMismatch: false,
+    ahead: null,
   };
 }
 
@@ -49,6 +50,7 @@ async function start(tab: Tab, hello: Extract<ContentToBg, { kind: "start" }>["h
     title: hello.title ?? null,
     mtInactive: null,
     protocolMismatch: false,
+    ahead: null,
   });
   tab.conn = new Connection(
     settings.serverUrl,
@@ -60,6 +62,8 @@ async function start(tab: Tab, hello: Extract<ContentToBg, { kind: "start" }>["h
           s.mtModel = msg.mt_model;
         } else if (msg.type === "stats") {
           s.stats = msg;
+        } else if (msg.type === "ahead_status") {
+          s.ahead = msg;
         } else if (msg.type === "translation") {
           s.mtInactive = null;
         } else if (msg.type === "error") {
