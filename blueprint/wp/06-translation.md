@@ -13,8 +13,9 @@ Au 30/09/2026, `llama-server.service` occupe 32,7 Go de RAM et **aucune VRAM**
 alors que `n_gpu_layers: all`. Probablement un démarrage au boot où le
 backend CUDA ne s'est pas initialisé (le service démarre `After=network-online`,
 pas après le chargement du driver NVIDIA), mais c'est à diagnostiquer dans
-AgenticEnv. **Issue à ouvrir** : `gh issue create --repo HadrienT/AgenticEnv
---label cross-repo`. Tant que ce n'est pas réglé, on écrit le code et les
+AgenticEnv : [AgenticEnv#15](https://github.com/HadrienT/AgenticEnv/issues/15).
+Les profils `code` / `translate` y sont suivis par
+[AgenticEnv#16](https://github.com/HadrienT/AgenticEnv/issues/16). Tant que ce n'est pas réglé, on écrit le code et les
 prompts, mais on ne mesure aucune latence.
 
 ## 1. Interface

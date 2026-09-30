@@ -57,10 +57,15 @@ int8_float16 seulement), partagées avec `llama-server` (AgenticEnv, budget
 
 ## Suivi du travail — GitHub Issues, pas de markdown de handoff
 
-Le « JIRA » du projet, ce sont les **GitHub Issues du repo** (`gh` est
-authentifié, compte `HadrienT`), une fois le dépôt poussé sur GitHub.
+Le « JIRA » du projet, ce sont les **GitHub Issues** de
+[`HadrienT/live-subs`](https://github.com/HadrienT/live-subs) (privé ; `gh` est
+authentifié, compte `HadrienT`). Une issue par lot (`WP00`–`WP14`, label `wp`),
+et une issue épinglée **`📋 Board`** (live-subs#16) qui les range par jalon et
+liste les dépendances AgenticEnv (AgenticEnv#15, AgenticEnv#16).
 
-- **Au démarrage d'une session** : `gh issue list --state open`.
+- **Au démarrage d'une session** : `gh issue list --state open` ici, et sur
+  `HadrienT/AgenticEnv` les issues `cross-repo` qui nous bloquent.
+- **Lot ou issue terminé** → fermer, et cocher la case dans le Board.
 - **Issue traitée** → `gh issue close <n> --comment "fait dans <sha>"`.
 - **Une tâche qui concerne AgenticEnv** (modèle servi, contexte, llama-bridge) →
   `gh issue create --repo HadrienT/AgenticEnv …`, label `cross-repo`.
