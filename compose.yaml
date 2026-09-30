@@ -1,0 +1,35 @@
+# live-subs server (WP10). `just deploy` — read CLAUDE.md « Réseau et Docker » first.
+services:
+  livesubs:
+    build:
+      context: ./server
+      # Build steps on the host network: no temporary veth on docker0 per RUN step.
+      network: host
+    image: live-subs-server:latest
+    container_name: live-subs
+    # Default `bridge` network on purpose: no network is created or deleted by this
+    # stack (docker0 teardowns froze this host once, AgenticEnv#8), and llama-bridge
+    # listens on the docker0 gateway (172.17.0.1:8001).
+    network_mode: bridge
+    ports: ["192.168.1.200:8765:8765"] # LAN address only, never 0.0.0.0
+    environment:
+      LIVESUBS_ASR_DEVICE: cuda:0
+      LIVESUBS_LLM_BASE_URL: http://172.17.0.1:8001/v1 # AgenticEnv's llama-bridge
+      LIVESUBS_LLM_MODEL: ${LIVESUBS_LLM_MODEL:-plamo-2-translate}
+      LIVESUBS_TOKEN: ${LIVESUBS_TOKEN:-}
+      LIVESUBS_LOG_LEVEL: ${LIVESUBS_LOG_LEVEL:-info}
+    volumes:
+      - livesubs_models:/models
+      - ./glossaries:/glossaries:ro
+    deploy:
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, device_ids: ["0"], capabilities: [gpu, utility] }]
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }
+
+volumes:
+  livesubs_models:
+    name: livesubs_models

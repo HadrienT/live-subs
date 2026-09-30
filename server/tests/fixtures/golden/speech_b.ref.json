@@ -1,0 +1,44 @@
+{
+ "source": "Mozilla Common Voice 8.0 ja test split (CC0-1.0); music: benchmarks/synth.py",
+ "seconds": 35.26,
+ "background_music_db": null,
+ "utterances": [
+  {
+   "id": "common_voice_ja_28662921",
+   "text": "この国に一番勢いがあったときに一番流行っていた建物。.",
+   "t0": 0.8,
+   "t1": 5.984
+  },
+  {
+   "id": "common_voice_ja_26253534",
+   "text": "彼女の名前は何と言いましたか？.",
+   "t0": 6.786,
+   "t1": 11.142
+  },
+  {
+   "id": "common_voice_ja_25496093",
+   "text": "はいはい。.",
+   "t0": 12.413,
+   "t1": 15.329
+  },
+  {
+   "id": "common_voice_ja_28327516",
+   "text": "科学は自然を支配するために自然についての客観的知識を求めるのであって、.",
+   "t0": 16.583,
+   "t1": 22.127
+  },
+  {
+   "id": "common_voice_ja_21560610",
+   "text": "入試前の夏休みだというのに、本ばかり読みふけっていた。.",
+   "t0": 22.982,
+   "t1": 28.526
+  },
+  {
+   "id": "common_voice_ja_21593940",
+   "text": "コンピューターのスイッチを入れます。.",
+   "t0": 29.634,
+   "t1": 33.906
+  }
+ ],
+ "music_only": []
+}

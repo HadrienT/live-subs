@@ -20,3 +20,4 @@ benchmarks/data/
 models/
 *.wav
 !server/tests/fixtures/**/*.wav
+extension/web-ext-artifacts/

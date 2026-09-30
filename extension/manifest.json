@@ -1,0 +1,84 @@
+{
+  "manifest_version": 3,
+  "name": "live-subs",
+  "version": "0.0.0",
+  "description": "Near-live Japanese + English subtitles for YouTube streams, transcribed and translated on your LAN.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "live-subs@hadrient.github.io",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    }
+  },
+  "icons": {
+    "48": "icons/icon.svg",
+    "96": "icons/icon.svg"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*.youtube.com/*"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://www.youtube.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "worklet.js"
+      ],
+      "matches": [
+        "*://www.youtube.com/*"
+      ]
+    }
+  ],
+  "action": {
+    "default_title": "live-subs",
+    "default_popup": "popup.html",
+    "default_icon": "icons/icon.svg"
+  },
+  "options_ui": {
+    "page": "options.html"
+  },
+  "commands": {
+    "toggle-capture": {
+      "suggested_key": {
+        "default": "Alt+Shift+S"
+      },
+      "description": "Activer / désactiver les sous-titres sur l'onglet"
+    },
+    "cycle-display": {
+      "suggested_key": {
+        "default": "Alt+Shift+D"
+      },
+      "description": "Affichage : JA + EN → EN → JA"
+    },
+    "toggle-hud": {
+      "suggested_key": {
+        "default": "Alt+L"
+      },
+      "description": "HUD de latence"
+    }
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

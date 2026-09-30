@@ -1,0 +1,37 @@
+{
+ "source": "Mozilla Common Voice 8.0 ja test split (CC0-1.0); music: benchmarks/synth.py",
+ "seconds": 30.36,
+ "background_music_db": null,
+ "utterances": [
+  {
+   "id": "common_voice_ja_22311487",
+   "text": "ペンで字を書きます。.",
+   "t0": 0.8,
+   "t1": 4.448
+  },
+  {
+   "id": "common_voice_ja_28388275",
+   "text": "お皿をもらうためシールを集めるのに必死.",
+   "t0": 5.181,
+   "t1": 9.861
+  },
+  {
+   "id": "common_voice_ja_27638377",
+   "text": "最初、北海道の地名かと思った.",
+   "t0": 10.68,
+   "t1": 14.604
+  },
+  {
+   "id": "common_voice_ja_22274421",
+   "text": "店員に食べ物を頼みました。.",
+   "t0": 25.104,
+   "t1": 29.208
+  }
+ ],
+ "music_only": [
+  {
+   "t0": 14.604,
+   "t1": 24.604
+  }
+ ]
+}

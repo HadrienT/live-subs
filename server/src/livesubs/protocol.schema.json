@@ -1,0 +1,330 @@
+{
+  "protocol_version": 2,
+  "sample_rate": 16000,
+  "frame": {
+    "header_size": 20,
+    "kind_audio": 1,
+    "flag_discontinuity": 1
+  },
+  "error_codes": [
+    "protocol_mismatch",
+    "unauthorized",
+    "bad_message",
+    "bad_frame",
+    "not_ready",
+    "mt_timeout",
+    "mt_unreachable",
+    "mt_model_inactive",
+    "internal"
+  ],
+  "messages": {
+    "hello": {
+      "direction": "c2s",
+      "fields": {
+        "protocol_version": {
+          "type": "integer",
+          "required": true,
+          "nullable": false
+        },
+        "token": {
+          "type": "string",
+          "required": false,
+          "nullable": true
+        },
+        "video_id": {
+          "type": "string",
+          "required": true,
+          "nullable": false
+        },
+        "channel_id": {
+          "type": "string",
+          "required": false,
+          "nullable": true
+        },
+        "title": {
+          "type": "string",
+          "required": false,
+          "nullable": true
+        },
+        "targets": {
+          "type": "array",
+          "required": false,
+          "nullable": false
+        },
+        "mode": {
+          "type": "string",
+          "required": false,
+          "nullable": false
+        }
+      }
+    },
+    "pause": {
+      "direction": "c2s",
+      "fields": {}
+    },
+    "resume": {
+      "direction": "c2s",
+      "fields": {}
+    },
+    "config": {
+      "direction": "c2s",
+      "fields": {
+        "targets": {
+          "type": "array",
+          "required": false,
+          "nullable": true
+        },
+        "show_partials": {
+          "type": "boolean",
+          "required": false,
+          "nullable": true
+        }
+      }
+    },
+    "ping": {
+      "direction": "c2s",
+      "fields": {
+        "ts": {
+          "type": "number",
+          "required": true,
+          "nullable": false
+        }
+      }
+    },
+    "ready": {
+      "direction": "s2c",
+      "fields": {
+        "session_id": {
+          "type": "string",
+          "required": true,
+          "nullable": false
+        },
+        "asr_model": {
+          "type": "string",
+          "required": true,
+          "nullable": false
+        },
+        "mt_model": {
+          "type": "string",
+          "required": true,
+          "nullable": true
+        },
+        "sample_rate": {
+          "type": "integer",
+          "required": false,
+          "nullable": false
+        }
+      }
+    },
+    "partial": {
+      "direction": "s2c",
+      "fields": {
+        "seg_id": {
+          "type": "integer",
+          "required": true,
+          "nullable": false
+        },
+        "ja_stable": {
+          "type": "string",
+          "required": true,
+          "nullable": false
+        },
+        "ja_unstable": {
+          "type": "string",
+          "required": true,
+          "nullable": false
+        },
+        "t0": {
+          "type": "number",
+          "required": true,
+          "nullable": false
+        },
+        "t1": {
+          "type": "number",
+          "required": true,
+          "nullable": false
+        }
+      }
+    },
+    "final": {
+      "direction": "s2c",
+      "fields": {
+        "seg_id": {
+          "type": "integer",
+          "required": true,
+          "nullable": false
+        },
+        "ja": {
+          "type": "string",
+          "required": true,
+          "nullable": false
+        },
+        "t0": {
+          "type": "number",
+          "required": true,
+          "nullable": false
+        },
+        "t1": {
+          "type": "number",
+          "required": true,
+          "nullable": false
+        },
+        "asr_ms": {
+          "type": "number",
+          "required": true,
+          "nullable": false
+        }
+      }
+    },
+    "translation_delta": {
+      "direction": "s2c",
+      "fields": {
+        "seg_id": {
+          "type": "integer",
+          "required": true,
+          "nullable": false
+        },
+        "en_delta": {
+          "type": "string",
+          "required": true,
+          "nullable": false
+        }
+      }
+    },
+    "translation": {
+      "direction": "s2c",
+      "fields": {
+        "seg_id": {
+          "type": "integer",
+          "required": true,
+          "nullable": false
+        },
+        "en": {
+          "type": "string",
+          "required": true,
+          "nullable": false
+        },
+        "mt_ms": {
+          "type": "number",
+          "required": true,
+          "nullable": false
+        },
+        "merged": {
+          "type": "array",
+          "required": false,
+          "nullable": false
+        }
+      }
+    },
+    "stats": {
+      "direction": "s2c",
+      "fields": {
+        "queue_depth": {
+          "type": "integer",
+          "required": true,
+          "nullable": false
+        },
+        "gpu_busy": {
+          "type": "boolean",
+          "required": true,
+          "nullable": false
+        },
+        "asr_ms_p50": {
+          "type": "number",
+          "required": false,
+          "nullable": true
+        },
+        "asr_ms_p95": {
+          "type": "number",
+          "required": false,
+          "nullable": true
+        },
+        "ja_ms_p50": {
+          "type": "number",
+          "required": false,
+          "nullable": true
+        },
+        "ja_ms_p95": {
+          "type": "number",
+          "required": false,
+          "nullable": true
+        },
+        "en_ms_p50": {
+          "type": "number",
+          "required": false,
+          "nullable": true
+        },
+        "en_ms_p95": {
+          "type": "number",
+          "required": false,
+          "nullable": true
+        },
+        "mt_first_token_ms_p50": {
+          "type": "number",
+          "required": false,
+          "nullable": true
+        }
+      }
+    },
+    "error": {
+      "direction": "s2c",
+      "fields": {
+        "code": {
+          "type": "string",
+          "required": true,
+          "nullable": false
+        },
+        "message": {
+          "type": "string",
+          "required": true,
+          "nullable": false
+        },
+        "fatal": {
+          "type": "boolean",
+          "required": false,
+          "nullable": false
+        },
+        "seg_id": {
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        }
+      }
+    },
+    "pong": {
+      "direction": "s2c",
+      "fields": {
+        "ts": {
+          "type": "number",
+          "required": true,
+          "nullable": false
+        }
+      }
+    },
+    "ahead_status": {
+      "direction": "s2c",
+      "fields": {
+        "state": {
+          "type": "string",
+          "required": true,
+          "nullable": false
+        },
+        "offset_s": {
+          "type": "number",
+          "required": false,
+          "nullable": true
+        },
+        "lead_s": {
+          "type": "number",
+          "required": false,
+          "nullable": true
+        },
+        "message": {
+          "type": "string",
+          "required": false,
+          "nullable": true
+        }
+      }
+    }
+  }
+}

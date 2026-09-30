@@ -1,0 +1,44 @@
+{
+ "source": "Mozilla Common Voice 8.0 ja test split (CC0-1.0); music: benchmarks/synth.py",
+ "seconds": 29.68,
+ "background_music_db": -12,
+ "utterances": [
+  {
+   "id": "common_voice_ja_27777691",
+   "text": "店頭価格からさらに割引します.",
+   "t0": 0.8,
+   "t1": 3.896
+  },
+  {
+   "id": "common_voice_ja_22307742",
+   "text": "れい.",
+   "t0": 4.937,
+   "t1": 7.793
+  },
+  {
+   "id": "common_voice_ja_21461826",
+   "text": "それらは、むろん、原作そのものではないし、その忠実な翻訳でもない。.",
+   "t0": 8.631,
+   "t1": 14.415
+  },
+  {
+   "id": "common_voice_ja_26489789",
+   "text": "止まってる鳥をこんな間近で見た.",
+   "t0": 15.567,
+   "t1": 20.535
+  },
+  {
+   "id": "common_voice_ja_25832004",
+   "text": "基幹部品の開発にかじを切る.",
+   "t0": 21.838,
+   "t1": 25.834
+  },
+  {
+   "id": "common_voice_ja_22921079",
+   "text": "今晩はホテルに泊まります。.",
+   "t0": 26.506,
+   "t1": 29.05
+  }
+ ],
+ "music_only": []
+}

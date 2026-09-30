@@ -1,0 +1,44 @@
+{
+ "source": "Mozilla Common Voice 8.0 ja test split (CC0-1.0); music: benchmarks/synth.py",
+ "seconds": 33.11,
+ "background_music_db": null,
+ "utterances": [
+  {
+   "id": "common_voice_ja_19710848",
+   "text": "もう一杯水を飲みます。.",
+   "t0": 0.8,
+   "t1": 4.136
+  },
+  {
+   "id": "common_voice_ja_25960355",
+   "text": "ここにはあまり多様な動物や鳥はいない。.",
+   "t0": 5.01,
+   "t1": 9.906
+  },
+  {
+   "id": "common_voice_ja_27877784",
+   "text": "個人情報を集めようとする会社が増えてきた.",
+   "t0": 10.718,
+   "t1": 16.586
+  },
+  {
+   "id": "common_voice_ja_25135281",
+   "text": "来月の初め、国へ帰ります。.",
+   "t0": 17.946,
+   "t1": 22.302
+  },
+  {
+   "id": "common_voice_ja_28359100",
+   "text": "そこには総企画的なものがなければならず、.",
+   "t0": 22.955,
+   "t1": 27.491
+  },
+  {
+   "id": "common_voice_ja_29059212",
+   "text": "重いスマホで手が疲れる.",
+   "t0": 28.381,
+   "t1": 32.017
+  }
+ ],
+ "music_only": []
+}

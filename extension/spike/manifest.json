@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "live-subs capture spike",
+  "version": "0.0.1",
+  "description": "WP02 spike: answers Q1–Q8 about capturing YouTube audio in Firefox.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "live-subs-spike@hadrient.github.io",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": { "required": ["none"] }
+    }
+  },
+  "permissions": ["storage"],
+  "host_permissions": ["*://*.youtube.com/*", "ws://192.168.1.200/*"],
+  "background": { "scripts": ["background.js"] },
+  "content_scripts": [
+    { "matches": ["*://www.youtube.com/*"], "js": ["content.js"], "run_at": "document_idle" }
+  ],
+  "web_accessible_resources": [
+    { "resources": ["worklet.js"], "matches": ["*://www.youtube.com/*"] }
+  ]
+}

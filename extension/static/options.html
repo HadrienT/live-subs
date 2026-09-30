@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr">
+<head><meta charset="utf-8"><title>live-subs — options</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 14px/1.5 system-ui, sans-serif; margin: 16px; max-width: 560px; }
+  label { display: grid; grid-template-columns: 200px 1fr; gap: 8px; align-items: center; margin: 8px 0; }
+  input[type=text], input[type=password], select { font: inherit; padding: 4px 6px; }
+  .hint { color: #777; font-size: 12px; margin: 0 0 8px 208px; }
+  #saved { color: #2a7; margin-left: 8px; }
+</style></head>
+<body>
+<h2>live-subs</h2>
+<form id="form">
+  <label>Serveur <input type="text" name="serverUrl" size="36" placeholder="ws://192.168.1.200:8765/ws"></label>
+  <label>Jeton <input type="password" name="token" autocomplete="off"></label>
+  <p class="hint">Seulement si le serveur définit LIVESUBS_TOKEN.</p>
+  <label>Taille du texte <input type="range" name="fontScale" min="0.6" max="2" step="0.05"></label>
+  <label>Opacité du fond <input type="range" name="opacity" min="0" max="1" step="0.05"></label>
+  <label>Afficher le provisoire <input type="checkbox" name="showPartials"></label>
+  <label>Deux dernières phrases <input type="checkbox" name="twoLines"></label>
+  <label>HUD de latence au démarrage <input type="checkbox" name="hud"></label>
+  <label>Sessions gardées (historique) <input type="number" name="historySessions" min="1" max="200"></label>
+  <label>Mode « en avance » <input type="checkbox" name="aheadMode"></label>
+  <p class="hint">Le serveur tire lui-même le direct ; la vidéo est gardée quelques secondes derrière pour que les sous-titres arrivent avant la phrase. Repli automatique sur la capture si l'alignement échoue.</p>
+  <label>Retard sur le direct (s) <input type="number" name="aheadDelayS" min="2" max="30" step="0.5"></label>
+  <label>Méthode de capture
+    <select name="captureMethod">
+      <option value="auto">auto</option>
+      <option value="captureStream">(moz)captureStream + reroutage</option>
+      <option value="mediaElementSource">createMediaElementSource</option>
+    </select></label>
+  <label>Chargement du worklet
+    <select name="workletMode">
+      <option value="auto">auto</option>
+      <option value="extension">URL d'extension</option>
+      <option value="blob">URL blob</option>
+      <option value="scriptProcessor">ScriptProcessorNode</option>
+    </select></label>
+  <label>Rejouer le son capturé <input type="checkbox" name="captureReroute"></label>
+  <p class="hint">À cocher seulement si le son de la vidéo disparaît quand l'extension s'active (méthode (moz)captureStream). Sinon le son est joué deux fois.</p>
+  <p class="hint">Réglages du spike (lot 02) : ne changer qu'en cas de souci de capture.</p>
+  <button type="submit">Enregistrer</button><span id="saved" hidden>enregistré</span>
+</form>
+<p>Raccourcis : <kbd>Alt+Shift+S</kbd> activer/désactiver, <kbd>Alt+Shift+D</kbd> affichage, <kbd>Alt+L</kbd> HUD.
+Modifiables dans <code>about:addons</code> → ⚙ → Gérer les raccourcis.</p>
+<script src="options.js"></script>
+</body>
+</html>

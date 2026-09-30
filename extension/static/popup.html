@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head><meta charset="utf-8"><title>live-subs</title><link rel="stylesheet" href="popup.css"></head>
+<body>
+<main>
+  <header><strong>live-subs</strong><span id="conn" class="pill">—</span></header>
+  <p id="notice" class="notice" hidden></p>
+  <section id="tab">
+    <button id="toggle" type="button">Activer sur cet onglet</button>
+    <label class="row"><input type="checkbox" id="always"> Toujours activer sur cette chaîne</label>
+    <fieldset class="row" id="display">
+      <label><input type="radio" name="display" value="both"> JA + EN</label>
+      <label><input type="radio" name="display" value="en"> EN</label>
+      <label><input type="radio" name="display" value="ja"> JA</label>
+    </fieldset>
+    <table>
+      <tr><th></th><th>p50</th><th>p95</th></tr>
+      <tr><td>JA</td><td id="ja50">–</td><td id="ja95">–</td></tr>
+      <tr><td>EN</td><td id="en50">–</td><td id="en95">–</td></tr>
+    </table>
+    <p class="muted" id="models"></p>
+    <p class="muted" id="queue"></p>
+    <details><summary>Exporter le transcript</summary>
+      <div class="row">
+        <select id="lang"><option value="both">JA + EN</option><option value="ja">JA</option><option value="en">EN</option></select>
+        <button type="button" data-format="srt">SRT</button>
+        <button type="button" data-format="vtt">VTT</button>
+      </div>
+    </details>
+  </section>
+  <footer><a href="#" id="options">Options</a></footer>
+</main>
+<script src="popup.js"></script>
+</body>
+</html>
