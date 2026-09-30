@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     max_segment_s: float = 12.0
     pad_ms: int = 200
     partial_interval_s: float = 1.0
+    vad_reset_after_s: float = 1.0  # 0 = never reset Silero's state (ADR-008)
 
     # --- ASR (WP04/WP05). Defaults are the WP04 bench winner (ADR-002).
     asr_backend: str = "faster-whisper"  # "faster-whisper" | "fake" (tests, no GPU)
@@ -38,6 +39,9 @@ class Settings(BaseSettings):
     asr_device: str = "cuda:0"
     asr_compute_type: str = "float16"
     asr_beam_size: int = 1
+    asr_revision: str | None = None  # pin a Hugging Face commit (WP04 records the tested one)
+    asr_local_only: bool = False  # true in the container: models come from `just fetch-models`
+    allow_cpu: bool = False  # never fall back to CPU silently (WP10 §3)
     asr_use_prompt: bool = True
     asr_prompt_chars: int = 50
     # Hallucination guard (livesubs.asr.filters)
@@ -69,6 +73,7 @@ class Settings(BaseSettings):
             max_segment_s=self.max_segment_s,
             pad_ms=self.pad_ms,
             update_interval_s=self.partial_interval_s,
+            reset_after_s=self.vad_reset_after_s,
         )
 
     def asr_options(self) -> AsrOptions:

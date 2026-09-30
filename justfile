@@ -26,9 +26,17 @@ test-server:
 test-ext:
     cd {{ext}} && npx vitest run
 
-# Tests that load the real models on the V100s (not in CI)
+# Tests that load the real models on the V100s, incl. the golden replay (not in CI)
 test-gpu:
     cd {{server}} && uv run --extra gpu pytest -m gpu
+
+# Regenerate the golden outputs (WP12): review `git diff` before committing them
+golden-update:
+    cd {{server}} && LIVESUBS_GOLDEN_UPDATE=1 uv run --extra gpu pytest -m "gpu and e2e" tests/e2e -v
+
+# Rebuild the golden fixtures from the public CC0 set (needs `just bench-prepare`)
+golden-fixtures:
+    cd {{server}} && uv run --group bench python ../benchmarks/make_fixtures.py
 
 # Run the server locally on ws://0.0.0.0:8765
 run-server:
@@ -50,6 +58,14 @@ bench-mt *args:
 ext-build:
     cd {{ext}} && node esbuild.mjs
 
+# Production build + lint + AMO "unlisted" signing → extension/dist-signed/*.xpi (WP11)
+# Needs WEB_EXT_API_KEY / WEB_EXT_API_SECRET in .env (addons.mozilla.org → API keys).
+ext-sign:
+    @test -n "${WEB_EXT_API_KEY:-}" -a -n "${WEB_EXT_API_SECRET:-}" || { echo "WEB_EXT_API_KEY / WEB_EXT_API_SECRET missing in .env"; exit 1; }
+    cd {{ext}} && rm -rf dist && node esbuild.mjs --production && npx web-ext lint --source-dir dist
+    cd {{ext}} && npx web-ext sign --channel=unlisted --source-dir dist --artifacts-dir dist-signed --api-key "$WEB_EXT_API_KEY" --api-secret "$WEB_EXT_API_SECRET"
+    @ls -1 {{ext}}/dist-signed/*.xpi
+
 # Disposable Firefox with the extension loaded
 ext-run: ext-build
     cd {{ext}} && npx web-ext run --source-dir dist --start-url https://www.youtube.com/
@@ -69,3 +85,23 @@ bench-prepare *args:
 # Blind A/B review of two translation models (WP06 §4)
 bench-mt-blind *args:
     cd {{server}} && uv run python ../benchmarks/mt/blind.py {{args}}
+
+# ---------------------------------------------------------------- deployment (WP10)
+
+# Build the server image
+docker-build:
+    docker compose build
+
+# Download the ASR model into the livesubs_models volume (once, before `deploy`)
+fetch-models:
+    docker compose run --rm --no-deps livesubs python -m livesubs.fetch
+
+# Start / update the server container (one container, default bridge network)
+deploy:
+    docker compose up -d livesubs
+
+# Health of the server + VRAM of both GPUs
+status url="http://192.168.1.200:8765":
+    @curl -fsS {{url}}/health | python3 -m json.tool || echo "server unreachable at {{url}}"
+    @nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv
+    @nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv

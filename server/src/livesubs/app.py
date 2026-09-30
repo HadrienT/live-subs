@@ -18,6 +18,8 @@ from livesubs.asr.base import Transcriber
 from livesubs.asr.fake import FakeTranscriber
 from livesubs.asr.scheduler import GpuScheduler
 from livesubs.config import Settings, get_settings
+from livesubs.gpu import memory as gpu_memory
+from livesubs.gpu import require_gpu
 from livesubs.mt.base import Translator
 from livesubs.mt.fake import FakeTranslator
 from livesubs.mt.glossary import GlossaryStore
@@ -38,6 +40,7 @@ class Services:
     make_vad: Callable[[], SpeechProbModel]
     load_transcriber: Callable[[], Transcriber] | None = None
     asr_model: str = "none"
+    asr_device: str = "none"
     translator: Translator | None = None
     glossaries: GlossaryStore = field(default_factory=lambda: GlossaryStore(None))
     scheduler: GpuScheduler | None = None
@@ -51,6 +54,7 @@ class Services:
         """Load and warm the ASR model before accepting sessions."""
         if self.load_transcriber is not None and self.scheduler is None:
             transcriber = await asyncio.to_thread(self.load_transcriber)
+            self.asr_device = getattr(transcriber, "device", self.asr_device)
             warmup = getattr(transcriber, "warmup", None)
             if warmup is not None:
                 await asyncio.to_thread(warmup)
@@ -106,11 +110,14 @@ def build_transcriber(settings: Settings) -> Callable[[], Transcriber] | None:
             def load() -> Transcriber:
                 from livesubs.asr.faster_whisper import FasterWhisperTranscriber
 
+                device = require_gpu(settings.asr_device, allow_cpu=settings.allow_cpu)
                 return FasterWhisperTranscriber(
                     settings.asr_model,
-                    device=settings.asr_device,
-                    compute_type=settings.asr_compute_type,
+                    device=device,
+                    compute_type=settings.asr_compute_type if device != "cpu" else "int8",
                     beam_size=settings.asr_beam_size,
+                    local_files_only=settings.asr_local_only,
+                    revision=settings.asr_revision,
                 )
 
             return load
@@ -146,6 +153,7 @@ def default_services(settings: Settings) -> Services:
         make_vad=make_vad,
         load_transcriber=load,
         asr_model=settings.asr_model if load is not None else "none",
+        asr_device=settings.asr_device if load is not None else "none",
         translator=build_translator(settings) if load is not None else None,
         glossaries=GlossaryStore(settings.glossary_dir),
     )
@@ -283,9 +291,10 @@ def create_app(settings: Settings | None = None, services: Services | None = Non
             "protocol_version": p.PROTOCOL_VERSION,
             "asr": {
                 "model": services.asr_model,
-                "device": settings.asr_device,
+                "device": services.asr_device,
                 "warm": services.warm,
             },
+            "gpu": await asyncio.to_thread(gpu_memory, services.asr_device),
             "llm": await llm_health(),
             "sessions": len(services.sessions),
         }

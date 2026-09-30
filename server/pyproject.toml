@@ -2,7 +2,7 @@
 name = "livesubs"
 version = "0.1.0"
 description = "Near-live Japanese + English subtitles for YouTube streams: inference server"
-readme = "../README.md"
+readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
     "fastapi>=0.115",
@@ -20,6 +20,7 @@ gpu = [
     "faster-whisper>=1.1",
     "nvidia-cublas-cu12>=12.4,<13",
     "nvidia-cudnn-cu12>=9,<10",
+    "nvidia-ml-py>=13.615.71",
 ]
 
 [project.scripts]
@@ -64,7 +65,7 @@ plugins = ["pydantic.mypy"]
 files = ["src", "tests", "../tools"]
 
 [[tool.mypy.overrides]]
-module = ["faster_whisper.*", "ctranslate2.*", "onnxruntime.*", "soxr.*"]
+module = ["faster_whisper.*", "ctranslate2.*", "onnxruntime.*", "pynvml.*", "huggingface_hub.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
