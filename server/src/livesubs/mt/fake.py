@@ -23,7 +23,9 @@ class FakeTranslator:
     async def status(self, *, fresh: bool = False) -> ModelStatus:
         return ModelStatus(True, self.active, [self.name if self.active else "code-model"])
 
-    async def translate(self, seg: FinalSegment, ctx: TranslationContext) -> AsyncIterator[str]:
+    async def translate(
+        self, seg: FinalSegment, ctx: TranslationContext, *, retry: bool = False
+    ) -> AsyncIterator[str]:
         """``EN(<ja>)``, with glossary terms replaced by their imposed spelling."""
         self.requests.append((seg.ja, ctx))
         text = seg.ja

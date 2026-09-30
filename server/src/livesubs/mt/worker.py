@@ -88,6 +88,10 @@ class TranslationWorker:
             while self._pending:
                 assert self._session is not None
                 if "en" not in self._session.targets:
+                    # display "JA only": translating would only cost GPU time
+                    log.debug(
+                        "%d segment(s) not translated: English not displayed", len(self._pending)
+                    )
                     self._pending.clear()
                     break
                 if len(self._pending) > self.merge_after:
@@ -106,6 +110,7 @@ class TranslationWorker:
         last = batch[-1]
         status = await self.translator.status()
         if not status.reachable:
+            log.warning("seg %d not translated: llama-server unreachable", last.seg_id)
             session.emit(
                 p.Error(
                     code="mt_unreachable", seg_id=last.seg_id, message="llama-server unreachable"
@@ -114,6 +119,7 @@ class TranslationWorker:
             return
         if not status.active:
             served = ", ".join(status.served) or "nothing"
+            log.warning("seg %d not translated: llama-server serves %s", last.seg_id, served)
             session.emit(
                 p.Error(
                     code="mt_model_inactive",
@@ -133,12 +139,25 @@ class TranslationWorker:
         pieces: list[str] = []
         try:
             async with asyncio.timeout(self.timeout_s):
-                async for piece in self.translator.translate(seg, ctx):
-                    if first_token is None:
-                        first_token = time.monotonic()
-                    pieces.append(piece)
-                    session.emit(p.TranslationDelta(seg_id=last.seg_id, en_delta=piece))
+                # An empty answer is retried once without llama-server's prompt cache:
+                # seen once on the hybrid (Mamba) PLaMo model, never reproduced since.
+                for attempt in range(2):
+                    async for piece in self.translator.translate(seg, ctx, retry=attempt > 0):
+                        if first_token is None:
+                            first_token = time.monotonic()
+                        pieces.append(piece)
+                        session.emit(p.TranslationDelta(seg_id=last.seg_id, en_delta=piece))
+                    if "".join(pieces).strip():
+                        break
+                    log.warning(
+                        "seg %d: empty translation after %.1f s%s: %r",
+                        last.seg_id,
+                        time.monotonic() - started,
+                        "" if attempt else ", retrying without prompt cache",
+                        ja,
+                    )
         except TimeoutError:
+            log.warning("seg %d: translation timed out after %.0f s", last.seg_id, self.timeout_s)
             session.emit(
                 p.Error(
                     code="mt_timeout",
@@ -148,6 +167,7 @@ class TranslationWorker:
             )
             return
         except MtUnreachableError as e:
+            log.warning("seg %d: llama-server unreachable: %s", last.seg_id, e)
             session.emit(p.Error(code="mt_unreachable", seg_id=last.seg_id, message=str(e)))
             return
         done = time.monotonic()

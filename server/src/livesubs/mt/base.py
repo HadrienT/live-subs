@@ -38,8 +38,11 @@ class ModelStatus:
 class Translator(Protocol):
     name: str
 
-    def translate(self, seg: FinalSegment, ctx: TranslationContext) -> AsyncIterator[str]:
-        """Yields the English text in pieces as it is generated."""
+    def translate(
+        self, seg: FinalSegment, ctx: TranslationContext, *, retry: bool = False
+    ) -> AsyncIterator[str]:
+        """Yields the English text in pieces as it is generated. ``retry``: second
+        attempt after an empty answer (bypass any server-side cache)."""
         ...
 
     async def status(self, *, fresh: bool = False) -> ModelStatus: ...

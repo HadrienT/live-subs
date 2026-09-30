@@ -217,3 +217,21 @@ def test_glossary_spelling_end_to_end(tmp_path: Path) -> None:
     assert any(m["type"] == "translation_delta" for m in msgs)
     # the ASR prompt was primed with the glossary terms
     assert any("ぺこら" in (prompt or "") for _, prompt in fake_asr.calls)
+
+
+async def test_empty_translation_is_retried_without_cache() -> None:
+    calls: list[bool] = []
+
+    class FlakyTranslator(FakeTranslator):
+        async def translate(
+            self, seg: FinalSegment, ctx: TranslationContext, *, retry: bool = False
+        ) -> Any:
+            calls.append(retry)
+            if retry:
+                yield "Did you forget?"
+
+    session = await run_worker(
+        TranslationWorker(FlakyTranslator()), [seg(1, "忘れちゃったの?")], 0.1
+    )
+    assert calls == [False, True]
+    assert [t.en for t in session.of(p.Translation)] == ["Did you forget?"]

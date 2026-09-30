@@ -80,8 +80,12 @@ class LlamaServerTranslator:
             body["chat_template_kwargs"] = {"enable_thinking": False}
         return body
 
-    async def translate(self, seg: FinalSegment, ctx: TranslationContext) -> AsyncIterator[str]:
+    async def translate(
+        self, seg: FinalSegment, ctx: TranslationContext, *, retry: bool = False
+    ) -> AsyncIterator[str]:
         body = self.payload(seg.ja, ctx)
+        if retry:
+            body["cache_prompt"] = False
         async for piece in self._stream("/chat/completions", body, _chat_delta):
             yield piece
 
