@@ -36,7 +36,7 @@ class FakeResolver:
 
     def replay_source(self, start_s: float) -> ArraySource:
         self.replay_starts.append(start_s)
-        return ArraySource(self.audio[int(start_s * 16000) :], speed=0)
+        return ArraySource(self.audio[int(start_s * 16000) :], speed=0, start_s=start_s)
 
 
 def client_for(source_factory: Any, **settings: Any) -> TestClient:

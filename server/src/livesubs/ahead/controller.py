@@ -34,6 +34,7 @@ log = logging.getLogger(__name__)
 
 SR = p.SAMPLE_RATE
 INNER_FIRST_SEG_ID = 1_000_001  # never collides with the outer session's ids
+REPLAY_GIVE_UP_S = 15.0  # reading this far behind the player: start over from it
 
 
 class AheadController:
@@ -144,13 +145,15 @@ class AheadController:
                 await self.source.aclose()
             await self.inner.close()
             self.inner = self._new_inner(replay=True)
-            self._replay_start = start
             self._source_total = 0
-            self.offset_s = -start
-            self.state = "aligned"
-            self._emit_status()
             try:
                 self.source = self.resolver.replay_source(start)
+                # a DASH replay starts at a fragment boundary, slightly before `start`
+                start = self.source.actual_start_s
+                self._replay_start = start
+                self.offset_s = -start
+                self.state = "aligned"
+                self._emit_status()
                 async for chunk in self.source.chunks():
                     # far enough ahead: wait for the player (stays put while paused)
                     while self._ahead_of_player() > self.replay_lead_s:
@@ -197,7 +200,7 @@ class AheadController:
         if self.replay is None:
             return True  # still probing: nothing to transcribe from yet
         if self.replay:
-            self._follow_player(frame.media_time)
+            self._follow_player(frame.media_time, frame.discontinuity)
             return True
         if frame.discontinuity:
             self._capture.clear()
@@ -232,10 +235,15 @@ class AheadController:
             log.debug("ahead: no alignment yet (conf %.2f, sharp %.2f)", a.confidence, a.sharpness)
             self._check_timeout(now)
 
-    def _follow_player(self, media_time: float) -> None:
-        """Replay: restart the reading if the player left the prefetched window."""
+    def _follow_player(self, media_time: float, jumped: bool) -> None:
+        """Replay: restart the reading if the player left the prefetched window.
+
+        Only on a real jump (the extension flags seeks), or when hopelessly behind:
+        the first audio takes a second or more to arrive, and meanwhile the player
+        naturally moves past what has been read (that is not a seek)."""
         read_to = self._replay_start + self._source_total / SR
-        if media_time < self._replay_start - 1.0 or media_time > read_to + 1.0:
+        outside = media_time < self._replay_start - 1.0 or media_time > read_to + 1.0
+        if (jumped and outside) or media_time > read_to + REPLAY_GIVE_UP_S:
             log.info("ahead: player jumped to %.1f s, reading from there", media_time)
             self._restart.set()
             self._player_moved.set()

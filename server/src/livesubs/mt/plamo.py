@@ -32,11 +32,18 @@ from livesubs.mt.llama import LlamaServerTranslator
 from livesubs.segments import FinalSegment
 
 OP = "<|plamo:op|>"
+# The GGUF says add_bos_token=false, so llama-server never adds it, while PFN's own
+# tokenizer does. Without it, short lines with no context make the model continue
+# its pre-training data ("Domain: generated.ja.cosmopedia.org …") instead of
+# translating: 1 line in 6 broken on a real replay, 0 with it.
+BOS = "<|plamo:bos|>"
 
 
 def _clean(text: str) -> str:
-    """One line, and never a block marker the model would read as structure."""
-    return " ".join(text.replace(OP, " ").split())
+    """One line, and never a marker the model would read as structure."""
+    for marker in (OP, BOS):
+        text = text.replace(marker, " ")
+    return " ".join(text.split())
 
 
 def build_prompt(ja: str, ctx: TranslationContext) -> str:
@@ -44,7 +51,7 @@ def build_prompt(ja: str, ctx: TranslationContext) -> str:
     seen_text = ja + "".join(past_ja for past_ja, _ in ctx.history)
     turns += sorted(ctx.glossary.relevant(seen_text).items(), key=lambda kv: -len(kv[0]))
     turns += ctx.history
-    parts = [f"{OP}dataset\ntranslation\n"]
+    parts = [f"{BOS}{OP}dataset\ntranslation\n"]
     for src, dst in turns:
         parts.append(
             f"{OP}input lang=Japanese\n{_clean(src)}\n{OP}output lang=English\n{_clean(dst)}\n"
