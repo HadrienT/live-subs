@@ -57,3 +57,7 @@ ext-run: ext-build
 # Scripted fake server for extension development without GPU
 fake-server port="8765":
     cd {{ext}} && npx tsx test/fake-server.ts {{port}}
+
+# Regenerate the protocol description compared by the TS drift test
+protocol-schema:
+    cd {{server}} && uv run python -m livesubs.protocol > src/livesubs/protocol.schema.json
