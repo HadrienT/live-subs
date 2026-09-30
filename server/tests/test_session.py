@@ -20,7 +20,7 @@ def hello(**kw: Any) -> str:
 
 @pytest.fixture
 def client() -> TestClient:
-    return TestClient(create_app(Settings(vad_backend="energy", token=None)))
+    return TestClient(create_app(Settings(vad_backend="energy", asr_backend="none")))
 
 
 def recv(ws: WebSocketTestSession) -> dict[str, Any]:
@@ -108,7 +108,9 @@ def test_protocol_mismatch_is_fatal(client: TestClient) -> None:
 
 
 def test_token_is_checked() -> None:
-    client = TestClient(create_app(Settings(vad_backend="energy", token="s3cret")))
+    client = TestClient(
+        create_app(Settings(vad_backend="energy", asr_backend="none", token="s3cret"))
+    )
     with client.websocket_connect("/ws") as ws:
         ws.send_text(hello(token="wrong"))
         assert recv(ws)["code"] == "unauthorized"

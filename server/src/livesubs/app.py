@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
-from collections.abc import Callable
+from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -14,7 +14,16 @@ from pydantic import ValidationError
 
 from livesubs import __version__
 from livesubs import protocol as p
+from livesubs.asr.base import Transcriber
+from livesubs.asr.fake import FakeTranscriber
+from livesubs.asr.scheduler import GpuScheduler
 from livesubs.config import Settings, get_settings
+from livesubs.mt.base import Translator
+from livesubs.mt.fake import FakeTranslator
+from livesubs.mt.glossary import GlossaryStore
+from livesubs.mt.llama import LlamaServerTranslator
+from livesubs.mt.worker import TranslationWorker
+from livesubs.pipeline import StreamingAsrSink
 from livesubs.session import SegmentSink, Session, VadOnlySink
 from livesubs.vad import EnergyVad, SileroVad, SpeechProbModel
 
@@ -27,17 +36,119 @@ class Services:
 
     settings: Settings
     make_vad: Callable[[], SpeechProbModel]
-    make_sink: Callable[[p.Hello], SegmentSink]
+    load_transcriber: Callable[[], Transcriber] | None = None
     asr_model: str = "none"
-    mt_model: str | None = None
+    translator: Translator | None = None
+    glossaries: GlossaryStore = field(default_factory=lambda: GlossaryStore(None))
+    scheduler: GpuScheduler | None = None
     sessions: dict[str, Session] = field(default_factory=dict)
+
+    @property
+    def warm(self) -> bool:
+        return self.load_transcriber is None or self.scheduler is not None
+
+    async def start(self) -> None:
+        """Load and warm the ASR model before accepting sessions."""
+        if self.load_transcriber is not None and self.scheduler is None:
+            transcriber = await asyncio.to_thread(self.load_transcriber)
+            warmup = getattr(transcriber, "warmup", None)
+            if warmup is not None:
+                await asyncio.to_thread(warmup)
+            self.scheduler = GpuScheduler(transcriber)
+            log.info("ASR ready: %s", transcriber.name)
+
+    async def stop(self) -> None:
+        if self.scheduler is not None:
+            await asyncio.to_thread(self.scheduler.close)
+        if self.translator is not None:
+            await self.translator.aclose()
+
+    @property
+    def mt_model(self) -> str | None:
+        return self.translator.name if self.translator is not None else None
+
+    def make_sink(self, hello: p.Hello) -> SegmentSink:
+        if self.load_transcriber is None:
+            return VadOnlySink()
+        if self.scheduler is None:
+            raise NotReadyError("the ASR model is still loading")
+        glossary = self.glossaries.get(hello.channel_id)
+        worker = None
+        if self.translator is not None:
+            s = self.settings
+            worker = TranslationWorker(
+                self.translator,
+                glossary=glossary,
+                history_len=s.mt_history,
+                merge_after=s.mt_merge_after,
+                timeout_s=s.mt_timeout_s,
+            )
+        return StreamingAsrSink(
+            self.scheduler,
+            options=self.settings.asr_options(),
+            prompt_terms=glossary.asr_prompt(),
+            translation=worker,
+        )
+
+
+class NotReadyError(Exception):
+    pass
+
+
+def build_transcriber(settings: Settings) -> Callable[[], Transcriber] | None:
+    match settings.asr_backend:
+        case "none":
+            return None
+        case "fake":
+            return FakeTranscriber
+        case "faster-whisper":
+
+            def load() -> Transcriber:
+                from livesubs.asr.faster_whisper import FasterWhisperTranscriber
+
+                return FasterWhisperTranscriber(
+                    settings.asr_model,
+                    device=settings.asr_device,
+                    compute_type=settings.asr_compute_type,
+                    beam_size=settings.asr_beam_size,
+                )
+
+            return load
+        case other:
+            raise ValueError(f"unknown LIVESUBS_ASR_BACKEND {other!r}")
+
+
+def build_translator(settings: Settings) -> Translator | None:
+    match settings.mt_backend:
+        case "none":
+            return None
+        case "fake":
+            return FakeTranslator()
+        case "llama":
+            return LlamaServerTranslator(
+                settings.llm_base_url,
+                settings.llm_model,
+                temperature=settings.llm_temperature,
+                max_tokens=settings.llm_max_tokens,
+                disable_thinking=settings.llm_disable_thinking,
+            )
+        case other:
+            raise ValueError(f"unknown LIVESUBS_MT_BACKEND {other!r}")
 
 
 def default_services(settings: Settings) -> Services:
     make_vad: Callable[[], SpeechProbModel] = (
         EnergyVad if settings.vad_backend == "energy" else SileroVad
     )
-    return Services(settings=settings, make_vad=make_vad, make_sink=lambda _hello: VadOnlySink())
+    load = build_transcriber(settings)
+    return Services(
+        settings=settings,
+        make_vad=make_vad,
+        load_transcriber=load,
+        asr_model=settings.asr_model if load is not None else "none",
+        translator=build_translator(settings) if load is not None else None,
+        glossaries=GlossaryStore(settings.glossary_dir),
+    )
 
 
 class _Closed(Exception):
@@ -75,11 +186,16 @@ async def _serve_session(ws: WebSocket, services: Services) -> None:
     if settings.token and first.token != settings.token:
         await fatal("unauthorized", "bad or missing token")
 
+    try:
+        sink = services.make_sink(first)
+    except NotReadyError as e:
+        await fatal("not_ready", str(e))
+        return
     session = Session(
         first,
         vad=services.make_vad(),
         vad_params=settings.vad_params(),
-        sink=services.make_sink(first),
+        sink=sink,
         emit=outbox.put_nowait,
         ring_seconds=settings.ring_seconds,
     )
@@ -136,7 +252,14 @@ async def _serve_session(ws: WebSocket, services: Services) -> None:
 def create_app(settings: Settings | None = None, services: Services | None = None) -> FastAPI:
     settings = settings or get_settings()
     services = services or default_services(settings)
-    app = FastAPI(title="live-subs", version=__version__)
+
+    @contextlib.asynccontextmanager
+    async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        await services.start()
+        yield
+        await services.stop()
+
+    app = FastAPI(title="live-subs", version=__version__, lifespan=lifespan)
     app.state.services = services
 
     @app.get("/health")
@@ -145,7 +268,25 @@ def create_app(settings: Settings | None = None, services: Services | None = Non
             "status": "ok",
             "version": __version__,
             "protocol_version": p.PROTOCOL_VERSION,
+            "asr": {
+                "model": services.asr_model,
+                "device": settings.asr_device,
+                "warm": services.warm,
+            },
+            "llm": await llm_health(),
             "sessions": len(services.sessions),
+        }
+
+    async def llm_health() -> dict[str, Any] | None:
+        if services.translator is None:
+            return None
+        status = await services.translator.status()
+        return {
+            "base_url": settings.llm_base_url,
+            "model": services.translator.name,
+            "reachable": status.reachable,
+            "active": status.active,
+            "served": status.served,
         }
 
     @app.websocket("/ws")
