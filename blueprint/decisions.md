@@ -382,3 +382,19 @@ d'abord à yt-dlp si la vidéo est un direct (`live_status == "is_live"`) :
   déjà lue, la lecture repart de la nouvelle position ; lecteur en pause =
   lecture en pause. Pas de fusion des traductions en retard : il y a le temps
   d'en faire une par phrase.
+
+**Premiers essais réels sur rediffusion (01/10/2026)** : trois défauts corrigés.
+1. *Boucle de redémarrage* : ffmpeg met ~1 s à livrer le premier son ; pendant
+   ce temps le lecteur dépassait ce qui était lu, ce qui passait pour un saut,
+   d'où un redémarrage sans fin. On ne redémarre plus que sur un vrai saut
+   (indicateur de discontinuité de l'extension) ou à plus de 15 s de retard.
+2. *Rediffusion toute récente (`post_live`)* : YouTube ne fournit que des
+   fragments DASH de ~2 s, pas de fichier lisible par ffmpeg. Chaque fragment
+   est un MP4 autonome : `DashFragmentSource` part du fragment qui contient la
+   position du lecteur et décode fragment après fragment ; le début réel du
+   fragment date les sous-titres.
+3. *PLaMo récitait ses données d'entraînement* sur des phrases courtes sans
+   contexte (« Domain: generated.ja.cosmopedia.org… ») : le GGUF déclare
+   `add_bos_token = false`, llama-server n'ajoutait donc pas `<|plamo:bos|>`,
+   que le tokenizer de PFN ajoute. Préfixé explicitement : 0 phrase cassée sur
+   6, contre 1.

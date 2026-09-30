@@ -278,7 +278,9 @@ async def _serve_session(ws: WebSocket, services: Services) -> None:
         services.sessions.pop(session.id, None)
         await session.close()
         outbox.put_nowait(None)
-        with contextlib.suppress(Exception):
+        # The client is gone: the sender may fail or have been cancelled already.
+        # asyncio.CancelledError is not an Exception: name it, or it escapes here.
+        with contextlib.suppress(Exception, asyncio.CancelledError):
             await asyncio.wait_for(sender_task, 2.0)
         sender_task.cancel()
         log.info("session %s closed", session.id)

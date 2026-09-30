@@ -12,6 +12,7 @@ coding model.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 import time
 from collections.abc import Callable
@@ -73,7 +74,10 @@ class TranslationWorker:
     async def aclose(self) -> None:
         if self._task is not None:
             self._task.cancel()
-            await asyncio.gather(self._task, return_exceptions=True)
+            # Teardown runs in `finally` blocks that may themselves be cancelled
+            # (client gone, server stopping): finish closing rather than abort half-way.
+            with contextlib.suppress(asyncio.CancelledError):
+                await asyncio.wait([self._task], timeout=2.0)
 
     # ------------------------------------------------------------------ internals
 

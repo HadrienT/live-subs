@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 import time
 
@@ -70,7 +71,10 @@ class StreamingAsrSink:
     async def aclose(self) -> None:
         for task in list(self._tasks):
             task.cancel()
-        await asyncio.gather(*self._tasks, return_exceptions=True)
+        # may run inside a cancelled `finally`: keep closing (see TranslationWorker.aclose)
+        if self._tasks:
+            with contextlib.suppress(asyncio.CancelledError):
+                await asyncio.wait(list(self._tasks), timeout=2.0)
         if self.translation is not None:
             await self.translation.aclose()
 
