@@ -22,6 +22,7 @@ export interface Settings {
   // Fallbacks decided by the WP02 spike; "auto" tries them in order.
   captureMethod: CaptureMethod;
   workletMode: WorkletMode;
+  captureReroute: boolean; // play the captured sound too (a Firefox that mutes captured videos)
   hud: boolean; // latency HUD (Alt+L)
   historySessions: number; // sessions kept for the transcript panel / export
   aheadMode: boolean; // WP13: the server pulls the live, the player stays behind it
@@ -40,6 +41,7 @@ export const DEFAULT_SETTINGS: Settings = {
   alwaysChannels: [],
   captureMethod: "auto",
   workletMode: "auto",
+  captureReroute: false,
   hud: false,
   historySessions: 20,
   aheadMode: false,

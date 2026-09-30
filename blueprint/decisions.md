@@ -35,6 +35,16 @@ muet / volume de YouTube sur le flux capturé ; la CSP de YouTube face à
 `audioWorklet.addModule()` ; le changement de `src` lors des pubs et de la
 navigation SPA.
 
+**Constat sur le PC (01/10/2026, Firefox du mainteneur ; Q2 / Q3 du lot 02).**
+`mozCaptureStream()` ne coupe **pas** la sortie de l'élément : avec le
+reroutage vers `audioContext.destination`, le son était joué deux fois, et le
+bouton muet de YouTube ne coupait que la moitié du son (la copie Web Audio
+ignore `video.volume` / `video.muted`). Correction : plus de reroutage par
+défaut (option « Rejouer le son capturé » pour un Firefox qui couperait
+l'élément), et tout chemin qui joue par Web Audio (reroutage, ou
+`createMediaElementSource`) passe par un gain qui suit le volume et le muet du
+lecteur.
+
 ---
 
 ## ADR-002 — ASR : Whisper spécialisé japonais via faster-whisper, choisi au banc

@@ -99,6 +99,7 @@ async function startCapture(video: HTMLVideoElement, sampleIdx: number): Promise
   capture = new Capture(video, {
     method: settings.captureMethod,
     worklet: settings.workletMode,
+    reroute: settings.captureReroute,
     onFrame: (buf) => send({ kind: "frame", buf }),
     log,
   });

@@ -1,7 +1,8 @@
 // Audio capture of YouTube's <video> (ADR-001): source → resampler → 100 ms int16 frames.
 //
 // Every step has the plan B of the WP02 spike behind a setting ("auto" tries in order):
-//   source:  mozCaptureStream/captureStream + re-route to the speakers | createMediaElementSource
+//   source:  mozCaptureStream/captureStream (the element keeps playing; optional
+//            re-route if a Firefox mutes captured elements) | createMediaElementSource
 //   worklet: extension URL | blob URL | ScriptProcessorNode
 import { FRAME_SAMPLES, SAMPLE_RATE, encodeFrame } from "../protocol";
 import type { CaptureMethod, WorkletMode } from "../shared/settings";
@@ -10,6 +11,9 @@ import { Downsampler } from "../worklet/downsampler";
 export interface CaptureOptions {
   method: CaptureMethod;
   worklet: WorkletMode;
+  // Play the captured stream through Web Audio too. Only for a Firefox that mutes
+  // an element once captured: otherwise the sound is heard twice (WP02 Q2).
+  reroute: boolean;
   onFrame: (buf: ArrayBuffer) => void;
   log?: (msg: string) => void;
 }
@@ -19,11 +23,25 @@ type Resampler = { node: AudioNode; reset: () => void };
 // createMediaElementSource() works once per element: keep it for the element's lifetime.
 const elementSources = new WeakMap<HTMLVideoElement, { ctx: AudioContext; node: MediaElementAudioSourceNode }>();
 
+/**
+ * Speakers path whose gain follows the player's volume and mute button: audio
+ * played through Web Audio would otherwise ignore YouTube's controls.
+ */
+function playbackGain(ctx: AudioContext, video: HTMLVideoElement): { node: GainNode; release: () => void } {
+  const node = ctx.createGain();
+  const sync = () => node.gain.setTargetAtTime(video.muted ? 0 : video.volume, ctx.currentTime, 0.015);
+  node.gain.value = video.muted ? 0 : video.volume;
+  video.addEventListener("volumechange", sync);
+  node.connect(ctx.destination);
+  return { node, release: () => video.removeEventListener("volumechange", sync) };
+}
+
 export class Capture {
   private ctx: AudioContext | null = null;
   private source: AudioNode | null = null;
   private resampler: Resampler | null = null;
   private stream: MediaStream | null = null;
+  private reroute: { node: GainNode; release: () => void } | null = null;
   private sampleIdx = 0;
   private pendingDiscontinuity = false;
   private sending = true;
@@ -74,9 +92,12 @@ export class Capture {
           const stream = capture.call(v);
           this.stream = stream;
           const node = ctx.createMediaStreamSource(stream);
-          // Firefox stops playing a captured element itself: send it to the speakers.
-          node.connect(ctx.destination);
-          this.how.push(v.captureStream ? "captureStream" : "mozCaptureStream", "rerouted");
+          this.how.push(v.captureStream ? "captureStream" : "mozCaptureStream");
+          if (this.opts.reroute) {
+            this.reroute = playbackGain(ctx, this.video);
+            node.connect(this.reroute.node);
+            this.how.push("rerouted");
+          }
           return node;
         } catch (e) {
           this.log(`captureStream failed: ${String(e)}`);
@@ -85,7 +106,8 @@ export class Capture {
       }
     }
     const node = ctx.createMediaElementSource(this.video);
-    node.connect(ctx.destination); // plays through the graph
+    // The element now only plays through the graph, for its whole life.
+    node.connect(playbackGain(ctx, this.video).node);
     elementSources.set(this.video, { ctx, node });
     this.ownsContext = false;
     this.how.push("mediaElementSource");
@@ -164,12 +186,12 @@ export class Capture {
   }
 
   async stop(): Promise<void> {
-    this.source?.disconnect();
+    // Only the branch to the resampler: the speakers path (if any) stays as it is.
+    if (this.source && this.resampler) this.source.disconnect(this.resampler.node);
     this.resampler?.node.disconnect();
-    if (this.source && elementSources.get(this.video)?.node === this.source) {
-      // keep playing through the graph: the element no longer outputs by itself
-      this.source.connect(this.ctx?.destination as AudioNode);
-    }
+    this.reroute?.release();
+    this.reroute?.node.disconnect();
+    this.reroute = null;
     // Ending the capture gives the element its own audio output back.
     for (const track of this.stream?.getTracks() ?? []) track.stop();
     this.stream = null;
