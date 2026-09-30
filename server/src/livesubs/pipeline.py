@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from collections.abc import Callable
 
 import numpy as np
 from numpy.typing import NDArray
@@ -34,13 +33,11 @@ class StreamingAsrSink:
         options: AsrOptions | None = None,
         prompt_terms: str = "",
         translation: TranslationWorker | None = None,
-        on_asr: Callable[[float, float, float], None] | None = None,
     ) -> None:
         self.scheduler = scheduler
         self.opts = options or AsrOptions()
         self.prompt_terms = prompt_terms
         self.translation = translation
-        self.on_asr = on_asr  # (queue_ms, asr_ms, ja_ms) for metrics
         self._context = ""
         self._agreements: dict[int, LocalAgreement] = {}
         self._partials_sent: set[int] = set()
@@ -55,7 +52,7 @@ class StreamingAsrSink:
         audio = session.audio(seg)
         if seg.is_closed:
             self._closed.add(seg.seg_id)
-            coro = self._final(session, seg, t0, t1, audio, time.monotonic())
+            coro = self._final(session, seg, t0, t1, audio, session.speech_end_at(seg))
         elif session.show_partials and seg.duration_s >= MIN_PARTIAL_S:
             coro = self._partial(session, seg, t0, t1, audio)
         else:
@@ -109,8 +106,9 @@ class StreamingAsrSink:
         t0: float,
         t1: float,
         audio: Audio,
-        closed_at: float,
+        speech_end_at: float,
     ) -> None:
+        closed_at = time.monotonic()
         timed = await self.scheduler.transcribe(
             audio, prompt=self._prompt(), final=True, key=(session.id, seg.seg_id)
         )
@@ -129,7 +127,12 @@ class StreamingAsrSink:
         text = timed.result.text
         self._context = (self._context + text)[-self.opts.prompt_chars :]
         session.emit(p.Final(seg_id=seg.seg_id, ja=text, t0=t0, t1=t1, asr_ms=timed.asr_ms))
-        if self.on_asr is not None:
-            self.on_asr(timed.queue_ms, timed.asr_ms, (time.monotonic() - closed_at) * 1000)
+        session.metrics.on_final(
+            seg.seg_id,
+            vad_wait_ms=(closed_at - speech_end_at) * 1000,
+            queue_ms=timed.queue_ms,
+            asr_ms=timed.asr_ms,
+            ja_ms=(time.monotonic() - speech_end_at) * 1000,
+        )
         if self.translation is not None:
-            self.translation.submit(session, FinalSegment(seg.seg_id, text, t0, t1, closed_at))
+            self.translation.submit(session, FinalSegment(seg.seg_id, text, t0, t1, speech_end_at))

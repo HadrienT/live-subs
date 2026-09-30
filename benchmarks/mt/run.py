@@ -96,7 +96,7 @@ async def bench_model(
     total_ms: list[float] = []
     outputs: list[str] = []
     # warm-up: first request pays for prompt processing of the system prompt
-    async for _ in tr.translate(FinalSegment(0, "こんにちは", 0, 1, 0), TranslationContext()):
+    async for _ in tr.translate(FinalSegment(0, "こんにちは", 0, 1, 0.0), TranslationContext()):
         pass
     for i, s in enumerate(segs):
         glossary = glossaries.get(s.get("channel_id"))

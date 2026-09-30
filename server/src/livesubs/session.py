@@ -12,6 +12,7 @@ from numpy.typing import NDArray
 
 from livesubs import protocol as p
 from livesubs.ingest import Ingest
+from livesubs.metrics import SessionMetrics
 from livesubs.vad import WINDOW_SAMPLES, Segmenter, SpeechProbModel, SpeechSegment, VadParams
 
 log = logging.getLogger(__name__)
@@ -67,6 +68,7 @@ class Session:
         self._vad_cursor: int | None = None
         self.paused = False
         self.segments_closed = 0
+        self.metrics = SessionMetrics(self.id)
 
     # ------------------------------------------------------------------ audio
 
@@ -77,6 +79,10 @@ class Session:
         """Segment bounds in ``media_time`` (seconds of the video)."""
         times = self.ingest.times
         return times.media_time(seg.start_idx), times.media_time(seg.end_idx)
+
+    def speech_end_at(self, seg: SpeechSegment) -> float:
+        """Arrival time of the last sample of the segment: latencies start here."""
+        return self.ingest.times.arrival(seg.end_idx - 1)
 
     def on_frame(self, frame: p.AudioFrame) -> None:
         if self.paused:

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import bisect
 import logging
+import time
 from dataclasses import dataclass
 
 import numpy as np
@@ -52,20 +53,33 @@ class AudioRing:
 
 
 class TimeMap:
-    """One ``(sample_idx, media_time)`` entry per frame; linear inside a frame."""
+    """One ``(sample_idx, media_time, arrival)`` entry per frame; linear inside a frame.
+
+    ``arrival`` is ``time.monotonic()`` when the frame reached the server: the
+    origin of every server-side latency (WP09)."""
 
     def __init__(self, keep_seconds: float = 120.0) -> None:
         self._idx: list[int] = []
         self._mt: list[float] = []
+        self._arrival: list[float] = []
         self._keep = int(keep_seconds * SAMPLE_RATE)
 
-    def add(self, sample_idx: int, media_time: float) -> None:
+    def add(self, sample_idx: int, media_time: float, arrival: float | None = None) -> None:
         self._idx.append(sample_idx)
         self._mt.append(media_time)
+        self._arrival.append(time.monotonic() if arrival is None else arrival)
         if len(self._idx) > 64 and sample_idx - self._idx[0] > self._keep:
             cut = bisect.bisect_left(self._idx, sample_idx - self._keep)
             del self._idx[:cut]
             del self._mt[:cut]
+            del self._arrival[:cut]
+
+    def arrival(self, sample_idx: int) -> float:
+        """When the frame holding ``sample_idx`` arrived (now if unknown)."""
+        if not self._idx:
+            return time.monotonic()
+        i = max(bisect.bisect_right(self._idx, sample_idx) - 1, 0)
+        return self._arrival[i]
 
     def media_time(self, sample_idx: int) -> float:
         if not self._idx:

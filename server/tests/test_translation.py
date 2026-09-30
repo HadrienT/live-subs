@@ -22,7 +22,7 @@ GLOSSARY = Glossary(name="Test Channel", terms={"ぺこら": "Pekora", "兎田�
 
 
 def seg(i: int, ja: str = "こんにちは") -> FinalSegment:
-    return FinalSegment(i, ja, float(i), i + 1.0, closed_at=0.0)
+    return FinalSegment(i, ja, float(i), i + 1.0, speech_end_at=0.0)
 
 
 # ------------------------------------------------------------------ glossary & prompt

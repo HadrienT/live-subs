@@ -209,7 +209,19 @@ async def _serve_session(ws: WebSocket, services: Services) -> None:
         while (msg := await outbox.get()) is not None:
             await ws.send_text(p.dump(msg))
 
+    async def stats_loop() -> None:
+        while True:
+            await asyncio.sleep(settings.stats_interval_s)
+            sched = services.scheduler
+            outbox.put_nowait(
+                session.metrics.stats(
+                    queue_depth=sched.queue_depth if sched else 0,
+                    gpu_busy=sched.busy if sched else False,
+                )
+            )
+
     sender_task = asyncio.create_task(sender())
+    stats_task = asyncio.create_task(stats_loop())
     try:
         while True:
             message = await ws.receive()
@@ -240,6 +252,7 @@ async def _serve_session(ws: WebSocket, services: Services) -> None:
                             p.Error(code="bad_message", message="one hello per connection")
                         )
     finally:
+        stats_task.cancel()
         services.sessions.pop(session.id, None)
         await session.close()
         outbox.put_nowait(None)

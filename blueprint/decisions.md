@@ -225,3 +225,38 @@ quelques contrôles.
 
 **Écarté.** *React dans le content script* : 40 ko injectés dans chaque page
 YouTube pour afficher deux `<div>`.
+
+---
+
+## ADR-007 — Latences mesurées et réglages retenus (lot 09)
+
+**Mesure du 30/09/2026**, serveur sur l'hôte (hors Docker), kotoba-whisper-v2.0
+fp16 sur GPU 0, `llama-server` sur GPU (Qwen3-Coder-30B-A3B, **témoin** : le
+profil `translate` n'existe pas encore), rejeu **temps réel** par
+`just replay` de Common Voice 8.0 ja enchaîné (pauses de 0,3 à 1,5 s). Latences
+depuis la fin du segment VAD (`t1`, qui inclut 200 ms de marge après la
+parole), côté client du rejeu ; les `stats` du serveur donnent les mêmes
+chiffres à 3 ms près.
+
+| | p50 | p95 | budget p50 (README §4) |
+|---|---|---|---|
+| ASR (décodage seul) | 109 ms | 121 ms | 300 ms |
+| **JA affiché** | **0,32 s** | **0,42 s** | 0,8–1,5 s |
+| MT premier jeton | 68 ms | — | — |
+| **EN affiché** | **0,56 s** | **0,92 s** | 1,5–2,5 s |
+
+Sur 5 min (59 segments) : JA p50 0,32 s / p95 0,42 s. Traduction : 11
+segments de 50 s. Rapporté à la fin réelle de la parole, ajouter les 200 ms de
+marge ; côté navigateur, ajouter la trame de 100 ms et le LAN (< 5 ms).
+
+**Réglages** : on garde les défauts (`min_silence_ms` 400, `partial` toutes
+les 1 s, fusion au-delà de 3 segments). Rien ne justifie de les resserrer, la
+marge sur le budget est de 3× en JA et en EN : `min_silence_ms` plus court
+couperait les phrases aux respirations, pour gagner des millisecondes dont on
+n'a pas besoin.
+
+**À refaire** sur un vrai stream (lot 02) et avec le modèle du profil
+`translate`, puis **en plein tour de l'agent de code** : ce qui manque ici,
+c'est l'effet du partage de llama-server, que seule une mesure pendant un tour
+d'OpenHands donnera. La fusion des traductions en retard (lot 06 §3) est la
+parade prévue.

@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     token: str | None = None
     log_level: str = "info"
     hello_timeout_s: float = 10.0
+    stats_interval_s: float = 5.0
 
     # --- ingest & VAD (WP03)
     ring_seconds: float = 30.0

@@ -10,6 +10,8 @@ _threads = os.environ.get("LIVESUBS_CPU_THREADS", "4")
 for _var in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
     os.environ.setdefault(_var, _threads)
 
+import logging  # noqa: E402
+
 import uvicorn  # noqa: E402
 
 from livesubs.app import create_app  # noqa: E402
@@ -18,6 +20,10 @@ from livesubs.config import get_settings  # noqa: E402
 
 def main() -> None:
     settings = get_settings()
+    logging.basicConfig(
+        level=settings.log_level.upper(),
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
     uvicorn.run(
         create_app(settings), host=settings.host, port=settings.port, log_level=settings.log_level
     )

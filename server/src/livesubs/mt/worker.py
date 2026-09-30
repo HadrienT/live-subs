@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
-# (first_token_ms, mt_ms, en_ms since the VAD closed the segment)
+# (first_token_ms, mt_ms, en_ms since the end of speech)
 MtMetrics = Callable[[float, float, float], None]
 
 
@@ -120,7 +120,7 @@ class TranslationWorker:
             )
             return
         ja = " ".join(s.ja for s in batch)
-        seg = FinalSegment(last.seg_id, ja, batch[0].t0, last.t1, batch[0].closed_at)
+        seg = FinalSegment(last.seg_id, ja, batch[0].t0, last.t1, last.speech_end_at)
         ctx = TranslationContext(
             history=list(self.history), glossary=self.glossary, channel_name=self.glossary.name
         )
@@ -156,6 +156,8 @@ class TranslationWorker:
         )
         if en:
             self.history = [*self.history, (ja, en)][-self.history_len :]
+        first_ms = ((first_token or done) - started) * 1000
+        en_ms = (done - last.speech_end_at) * 1000
+        session.metrics.on_translation(last.seg_id, mt_first_ms=first_ms, mt_ms=mt_ms, en_ms=en_ms)
         if self.on_metrics is not None:
-            first_ms = ((first_token or done) - started) * 1000
-            self.on_metrics(first_ms, mt_ms, (done - last.closed_at) * 1000)
+            self.on_metrics(first_ms, mt_ms, en_ms)
