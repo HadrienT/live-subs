@@ -3,6 +3,8 @@
 Near-live Japanese and English subtitles for YouTube streams in Firefox,
 transcribed and translated on a local GPU server. Nothing leaves the LAN.
 
+**[How it works: interactive map](https://hadrient.github.io/atlas-pages/live-subs/)**
+
 [![CI](https://github.com/HadrienT/live-subs/actions/workflows/ci.yml/badge.svg)](https://github.com/HadrienT/live-subs/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-asyncio-3776AB?logo=python&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-Firefox%20MV3-3178C6?logo=typescript&logoColor=white)
